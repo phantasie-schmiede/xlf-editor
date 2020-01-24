@@ -1,0 +1,7 @@
+module.tx_psbxlfeditor {
+  view {
+    layoutRootPaths.0 = {$module.tx_psbxlfeditor.view.layoutRootPath}
+    partialRootPaths.0 = {$module.tx_psbxlfeditor.view.partialRootPath}
+    templateRootPaths.0 = {$module.tx_psbxlfeditor.view.templateRootPath}
+  }
+}

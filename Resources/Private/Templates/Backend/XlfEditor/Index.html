@@ -1,0 +1,53 @@
+{namespace psb=PSB\PsbXlfEditor\ViewHelpers}
+
+<div id="accordion-extensions">
+    <f:for as="extensionFiles" each="{translations}" key="extensionKey">
+        <div class="card">
+            <div class="card-header" id="{extensionKey}">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapse-{extensionKey}" aria-expanded="true" aria-controls="collapse-{extensionKey}">
+                        {extensionKey}
+                    </button>
+                </h5>
+            </div>
+            <div id="collapse-{extensionKey}" class="collapse collapsed" aria-labelledby="{extensionKey}" data-parent="#accordion-extensions">
+                <div class="card-body">
+                    <div id="accordion-{extensionKey}">
+                        <f:for as="fileTranslations" each="{extensionFiles}" key="filePath">
+                            <f:variable name="filename" value="{psb:getFilenameFromPath(path: filePath)}" />
+                            <div class="card">
+                                <div class="card-header" id="{extensionKey}-{filename}">
+                                    <h5 class="mb-0">
+                                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse-{extensionKey}-{filename}" aria-expanded="true" aria-controls="collapse-{extensionKey}">
+                                            {filename}
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="collapse-{extensionKey}-{filename}" class="collapse collapsed" aria-labelledby="{extensionKey}-{filename}" data-parent="#accordion-{extensionKey}">
+                                    <div class="card-body">
+                                        <f:for as="translation" each="{fileTranslations}" key="locallangId">
+                                            <p>
+                                                <b>{locallangId}:</b>
+                                                <f:form action="saveChanges" arguments="{filePath: filePath, locallangId: locallangId}">
+                                                    <f:for as="value" each="{translation}" key="languageKey">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text" id="{extensionKey}-{filename}-{locallangId}-{languageKey}">{languageKey}</span>
+                                                            </div>
+                                                            <f:form.textarea additionalAttributes="{aria-describedby: '{extensionKey}-{filename}-{locallangId}-{languageKey}', aria-label: value}" class="form-control" name="translations[{languageKey}]" value="{value}" />
+                                                        </div>
+                                                    </f:for>
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                </f:form>
+                                            </p>
+                                        </f:for>
+                                    </div>
+                                </div>
+                            </div>
+                        </f:for>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </f:for>
+</div>
