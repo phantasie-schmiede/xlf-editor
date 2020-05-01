@@ -11,7 +11,7 @@ $EM_CONF['psb_xlf_editor'] = [
         ],
         'depends'   => [
             'psb_foundation' => '',
-            'typo3'          => '10.1.0-10.4.99',
+            'typo3'          => '10.4.1-10.4.99',
         ],
         'suggests'  => [
         ],
@@ -21,5 +21,5 @@ $EM_CONF['psb_xlf_editor'] = [
     'state'            => 'alpha',
     'title'            => 'PSbits | XLF-editor',
     'uploadfolder'     => false,
-    'version'          => '0.0.0',
+    'version'          => '0.0.1',
 ];

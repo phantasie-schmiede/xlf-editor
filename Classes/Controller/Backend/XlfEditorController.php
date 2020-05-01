@@ -27,16 +27,17 @@ namespace PSB\PsbXlfEditor\Controller\Backend;
  ***************************************************************/
 
 use PSB\PsbFoundation\Controller\Backend\AbstractModuleController;
+use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleAction;
+use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleConfig;
 use PSB\PsbFoundation\Utility\ArrayUtility;
 use PSB\PsbFoundation\Utility\XmlUtility;
 use PSB\PsbXlfEditor\Utility\XlfUtility;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
-use TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException;
 
 /**
  * Class XlfEditorController
  * @package                  PSB\PsbXlfEditor\Controller\Backend
- * @PSB\PsbFoundation\Module mainModuleName=tools
+ * @ModuleConfig (mainModuleName=tools)
  */
 class XlfEditorController extends AbstractModuleController
 {
@@ -50,10 +51,9 @@ class XlfEditorController extends AbstractModuleController
      * @param string $filePath
      * @param string $locallangId
      * @param array  $translations
-     * @PSB\PsbFoundation\Module\Action \PSB\PsbFoundation\Service\DocComment\ValueParsers\ModuleActionParser::FLAGS[DO_NOT_RENDER]
+     * @ModuleAction (doNotRender=true)
      *
      * @throws StopActionException
-     * @throws UnsupportedRequestTypeException
      */
     public function saveChangesAction(string $filePath, string $locallangId, array $translations): void
     {

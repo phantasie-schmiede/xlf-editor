@@ -82,7 +82,7 @@ class XlfUtility
                         $languageKey);
                 } else {
                     $xmlData = XmlUtility::convertXmlToArray(file_get_contents($languageFile));
-                    $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::ATTRIBUTES_KEY];
+                    $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::SPECIAL_KEYS['ATTRIBUTES']];
 
                     if (isset($fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME])
                         && true === $fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]
@@ -91,8 +91,8 @@ class XlfUtility
                             $languageKey);
                     } else {
                         foreach ($xmlData['xliff']['file']['body']['trans-unit'] as $transUnit) {
-                            if (isset($transUnit[XmlUtility::ATTRIBUTES_KEY])) {
-                                $transUnitTagAttributes = $transUnit[XmlUtility::ATTRIBUTES_KEY];
+                            if (isset($transUnit[XmlUtility::SPECIAL_KEYS['ATTRIBUTES']])) {
+                                $transUnitTagAttributes = $transUnit[XmlUtility::SPECIAL_KEYS['ATTRIBUTES']];
 
                                 if (true === $transUnitTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]) {
                                     $editableTranslations[$extensionKey][$arrayKey][$transUnitTagAttributes['id']][$languageKey] = $transUnit['target'] ?? $transUnit['source'];
