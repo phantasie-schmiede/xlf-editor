@@ -27,26 +27,27 @@ namespace PSB\PsbXlfEditor\Utility;
  ***************************************************************/
 
 use PSB\PsbFoundation\Data\ExtensionInformationInterface;
-use PSB\PsbFoundation\Traits\StaticInjectionTrait;
 use PSB\PsbFoundation\Utility\ExtensionInformationUtility;
+use PSB\PsbFoundation\Utility\ObjectUtility;
 use PSB\PsbFoundation\Utility\XmlUtility;
 use TYPO3\CMS\Core\Localization\LocalizationFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\Exception;
 
 /**
  * Class XlfUtility
+ *
  * @package PSB\PsbXlfEditor\Utility
  */
 class XlfUtility
 {
-    use StaticInjectionTrait;
-
     public const DEFAULT_LANGUAGE_KEY = 'default';
     public const FILE_ENDING          = 'xlf';
 
     /**
      * @return array
+     * @throws Exception
      */
     public static function getEditableTranslations(): array
     {
@@ -57,7 +58,8 @@ class XlfUtility
         foreach ($loadedExtensions as $extensionKey) {
             $languageFileDirectory = ExtensionInformationUtility::getLanguageFilePath($extensionKey);
             $languageFiles = [];
-            $languageFiles = GeneralUtility::getAllFilesAndFoldersInPath($languageFiles, $languageFileDirectory, self::FILE_ENDING);
+            $languageFiles = GeneralUtility::getAllFilesAndFoldersInPath($languageFiles, $languageFileDirectory,
+                self::FILE_ENDING);
 
             foreach ($languageFiles as $languageFile) {
                 $directoryName = pathinfo($languageFile, PATHINFO_DIRNAME);
@@ -75,6 +77,7 @@ class XlfUtility
                  * Collect all translations of current file if the extension allows general editing of its language
                  * files or if current file contains a special XML-attribute in its <file>-tag. Otherwise look at each
                  * translation separately and check if it may be edited.
+                 *
                  * @see \PSB\PsbFoundation\Data\ExtensionInformationInterface
                  */
                 if (isset($allExtensionInformation[$extensionKey]) && true === $allExtensionInformation[$extensionKey]::ALLOW_LANGUAGE_FILE_EDITING) {
@@ -108,16 +111,18 @@ class XlfUtility
     }
 
     /**
-     * @param mixed  $translations
+     * @param        $translations
      * @param string $languageFile
      * @param string $languageKey
+     *
+     * @throws Exception
      */
     private static function addAllTranslations(
         &$translations,
         string $languageFile,
         string $languageKey
     ): void {
-        $parsedData = self::get(LocalizationFactory::class)->getParsedData($languageFile, $languageKey);
+        $parsedData = ObjectUtility::get(LocalizationFactory::class)->getParsedData($languageFile, $languageKey);
 
         if (!is_array($translations)) {
             $translations = [];

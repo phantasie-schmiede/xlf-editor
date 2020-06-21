@@ -32,15 +32,23 @@ use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleConfig;
 use PSB\PsbFoundation\Utility\ArrayUtility;
 use PSB\PsbFoundation\Utility\XmlUtility;
 use PSB\PsbXlfEditor\Utility\XlfUtility;
+use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
+use TYPO3\CMS\Extbase\Object\Exception;
 
 /**
  * Class XlfEditorController
- * @package                  PSB\PsbXlfEditor\Controller\Backend
- * @ModuleConfig (mainModuleName=tools)
+ *
+ * @package PSB\PsbXlfEditor\Controller\Backend
+ * @ModuleConfig(mainModuleName=tools)
  */
 class XlfEditorController extends AbstractModuleController
 {
+    /**
+     * @ModuleAction()
+     * @throws Exception
+     */
     public function indexAction(): void
     {
         $editableTranslations = XlfUtility::getEditableTranslations();
@@ -49,17 +57,16 @@ class XlfEditorController extends AbstractModuleController
 
     /**
      * @param string $filePath
-     * @param string $locallangId
-     * @param array  $translations
-     * @ModuleAction (doNotRender=true)
+     * @param array  $labels
      *
+     * @ModuleAction(doNotRender=true)
+     * @throws Exception
+     * @throws NoSuchCacheException
      * @throws StopActionException
      */
-    public function saveChangesAction(string $filePath, string $locallangId, array $translations): void
+    public function saveChangesAction(string $filePath, array $labels): void
     {
-        $languageKeys = array_keys($translations);
-
-        foreach ($languageKeys as $languageKey) {
+        foreach ($labels as $languageKey => $localLangIds) {
             $fullPath = $filePath;
 
             if (XlfUtility::DEFAULT_LANGUAGE_KEY !== $languageKey) {
@@ -70,19 +77,23 @@ class XlfEditorController extends AbstractModuleController
             $xmlDeclaration = fgets(fopen($fullPath, 'rb'));
             $xmlData = XmlUtility::convertXmlToArray(file_get_contents($fullPath));
 
-            // index looks like xliff.file.body.trans-unit.X.@attributes.id, where X is the position among all translations in that file
-            $index = ArrayUtility::inArrayRecursive($xmlData, $locallangId, true);
-            $arrayPath = explode('.', $index);
-            $transUnitPosition = $arrayPath[4];
-            $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['source'] = $translations[XlfUtility::DEFAULT_LANGUAGE_KEY];
+            foreach ($localLangIds as $localLangId => $localLangValue) {
+                // index looks like xliff.file.body.trans-unit.X.@attributes.id, where X is the position among all translations in that file
+                $index = ArrayUtility::inArrayRecursive($xmlData, $localLangId, true);
+                $arrayPath = explode('.', $index);
+                $transUnitPosition = $arrayPath[4];
+                $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['source'] = $labels[XlfUtility::DEFAULT_LANGUAGE_KEY][$localLangId];
 
-            if (XlfUtility::DEFAULT_LANGUAGE_KEY !== $languageKey) {
-                $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['target'] = $translations[$languageKey];
+                if (XlfUtility::DEFAULT_LANGUAGE_KEY !== $languageKey) {
+                    $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['target'] = $localLangValue;
+                }
             }
 
             file_put_contents($fullPath, $xmlDeclaration . XmlUtility::convertArrayToXml($xmlData));
         }
 
+        // Clear the l10n-cache. Otherwise the changes won't be displayed in the overview.
+        $this->get(CacheManager::class)->getCache('l10n')->flush();
         $this->redirect('index');
     }
 }

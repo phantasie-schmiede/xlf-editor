@@ -10,8 +10,8 @@ $EM_CONF['psb_xlf_editor'] = [
         'conflicts' => [
         ],
         'depends'   => [
-            'psb_foundation' => '',
-            'typo3'          => '10.4.1-10.4.99',
+            'psb_foundation' => '0.1.0',
+            'typo3'          => '10.4.2-10.4.99',
         ],
         'suggests'  => [
         ],

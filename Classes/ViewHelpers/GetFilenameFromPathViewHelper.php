@@ -28,6 +28,11 @@ namespace PSB\PsbXlfEditor\ViewHelpers;
 
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
+/**
+ * Class GetFilenameFromPathViewHelper
+ *
+ * @package PSB\PsbXlfEditor\ViewHelpers
+ */
 class GetFilenameFromPathViewHelper extends AbstractViewHelper
 {
     public function initializeArguments(): void

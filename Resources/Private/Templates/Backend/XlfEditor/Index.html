@@ -1,46 +1,38 @@
-{namespace psb=PSB\PsbXlfEditor\ViewHelpers}
-
-<div id="accordion-extensions">
+<html data-namespace-typo3-fluid="true"
+      xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:psb="http://typo3.org/ns/PSB/PsbXlfEditor/ViewHelpers"
+>
+<div class="panel-group" id="accordion-extensions">
     <f:for as="extensionFiles" each="{translations}" key="extensionKey">
-        <div class="card">
-            <div class="card-header" id="{extensionKey}">
-                <h5 class="mb-0">
-                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapse-{extensionKey}" aria-expanded="true" aria-controls="collapse-{extensionKey}">
-                        {extensionKey}
-                    </button>
-                </h5>
-            </div>
-            <div id="collapse-{extensionKey}" class="collapse collapsed" aria-labelledby="{extensionKey}" data-parent="#accordion-extensions">
-                <div class="card-body">
-                    <div id="accordion-{extensionKey}">
+        <div class="panel panel-default">
+            <button class="list-group-item list-group-item-info" data-parent="#accordion-extensions" data-toggle="collapse" data-target="#collapse-{extensionKey}" aria-expanded="true" aria-controls="collapse-{extensionKey}">
+                {extensionKey} <span class="glyphicon glyphicon-menu-down pull-right"></span>
+            </button>
+            <div id="collapse-{extensionKey}" class="collapse" aria-labelledby="{extensionKey}" data-parent="#accordion-extensions">
+                <div class="panel-body">
+                    <div class="panel-group" id="accordion-{extensionKey}">
                         <f:for as="fileTranslations" each="{extensionFiles}" key="filePath">
-                            <f:variable name="filename" value="{psb:getFilenameFromPath(path: filePath)}" />
-                            <div class="card">
-                                <div class="card-header" id="{extensionKey}-{filename}">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse-{extensionKey}-{filename}" aria-expanded="true" aria-controls="collapse-{extensionKey}">
-                                            {filename}
-                                        </button>
-                                    </h5>
-                                </div>
+                            <div class="panel panel-default">
+                                <f:variable name="filename" value="{psb:getFilenameFromPath(path: filePath)}" />
+                                <button class="list-group-item" data-toggle="collapse" data-target="#collapse-{extensionKey}-{filename}" aria-expanded="true" aria-controls="collapse-{extensionKey}">
+                                    <b>{filename}</b> ({psb:getShortLanguageFilePath(path: filePath)})
+                                </button>
                                 <div id="collapse-{extensionKey}-{filename}" class="collapse collapsed" aria-labelledby="{extensionKey}-{filename}" data-parent="#accordion-{extensionKey}">
-                                    <div class="card-body">
-                                        <f:for as="translation" each="{fileTranslations}" key="locallangId">
-                                            <p>
-                                                <b>{locallangId}:</b>
-                                                <f:form action="saveChanges" arguments="{filePath: filePath, locallangId: locallangId}">
-                                                    <f:for as="value" each="{translation}" key="languageKey">
-                                                        <div class="input-group">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text" id="{extensionKey}-{filename}-{locallangId}-{languageKey}">{languageKey}</span>
-                                                            </div>
-                                                            <f:form.textarea additionalAttributes="{aria-describedby: '{extensionKey}-{filename}-{locallangId}-{languageKey}', aria-label: value}" class="form-control" name="translations[{languageKey}]" value="{value}" />
+                                    <div class="panel-body">
+                                        <f:form action="saveChanges" arguments="{filePath: filePath, locallangId: locallangId}">
+                                            <f:for as="translation" each="{fileTranslations}" key="locallangId">
+                                                <b>{locallangId}</b>
+                                                <f:for as="value" each="{translation}" key="languageKey">
+                                                    <div class="form-control-wrap input-group">
+                                                        <div class="input-group-addon">
+                                                            <span class="input-group-text" id="{extensionKey}-{filename}-{languageKey}-{locallangId}">{languageKey}</span>
                                                         </div>
-                                                    </f:for>
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                                </f:form>
-                                            </p>
-                                        </f:for>
+                                                        <f:form.textfield additionalAttributes="{aria-describedby: '{extensionKey}-{filename}-{languageKey}-{locallangId}', aria-label: value}" class="form-control" name="labels[{languageKey}][{locallangId}]" value="{value}" />
+                                                    </div>
+                                                </f:for>
+                                            </f:for>
+                                            <button class="btn btn-primary" type="submit">Submit</button>
+                                        </f:form>
                                     </div>
                                 </div>
                             </div>
@@ -51,3 +43,4 @@
         </div>
     </f:for>
 </div>
+</html>
