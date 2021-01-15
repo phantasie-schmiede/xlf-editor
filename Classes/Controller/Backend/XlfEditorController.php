@@ -31,7 +31,7 @@ use PSB\PsbFoundation\Controller\Backend\AbstractModuleController;
 use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleAction;
 use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleConfig;
 use PSB\PsbFoundation\Utility\ArrayUtility;
-use PSB\PsbFoundation\Utility\Xml\ConverterUtility;
+use PSB\PsbFoundation\Utility\Xml\XmlUtility;
 use PSB\PsbXlfEditor\Utility\XlfUtility;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
@@ -77,7 +77,7 @@ class XlfEditorController extends AbstractModuleController
             }
 
             $xmlDeclaration = fgets(fopen($fullPath, 'rb'));
-            $xmlData = ConverterUtility::convertXmlToArray(file_get_contents($fullPath));
+            $xmlData = XmlUtility::convertFromXml(file_get_contents($fullPath));
 
             foreach ($localLangIds as $localLangId => $localLangValue) {
                 // index looks like xliff.file.body.trans-unit.X.@attributes.id, where X is the position among all translations in that file
@@ -91,7 +91,7 @@ class XlfEditorController extends AbstractModuleController
                 }
             }
 
-            file_put_contents($fullPath, $xmlDeclaration . ConverterUtility::convertArrayToXml($xmlData));
+            file_put_contents($fullPath, $xmlDeclaration . XmlUtility::convertToXml($xmlData));
         }
 
         // Clear the l10n-cache. Otherwise the changes won't be displayed in the overview.

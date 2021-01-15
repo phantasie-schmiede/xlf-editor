@@ -30,7 +30,7 @@ use JsonException;
 use PSB\PsbFoundation\Data\ExtensionInformationInterface;
 use PSB\PsbFoundation\Utility\ExtensionInformationUtility;
 use PSB\PsbFoundation\Utility\ObjectUtility;
-use PSB\PsbFoundation\Utility\Xml\ConverterUtility;
+use PSB\PsbFoundation\Utility\Xml\XmlUtility;
 use TYPO3\CMS\Core\Localization\LocalizationFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -86,18 +86,18 @@ class XlfUtility
                     self::addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
                         $languageKey);
                 } else {
-                    $xmlData = ConverterUtility::convertXmlToArray(file_get_contents($languageFile));
-                    $fileTagAttributes = $xmlData['xliff']['file'][ConverterUtility::SPECIAL_KEYS['ATTRIBUTES']];
+                    $xmlData = XmlUtility::convertFromXml(file_get_contents($languageFile));
+                    $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::SPECIAL_KEYS['ATTRIBUTES']];
 
                     if (isset($fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME])
                         && true === $fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]
                     ) {
                         self::addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
                             $languageKey);
-                    } else {
+                    } elseif (is_iterable($xmlData['xliff']['file']['body']['trans-unit'])) {
                         foreach ($xmlData['xliff']['file']['body']['trans-unit'] as $transUnit) {
-                            if (isset($transUnit[ConverterUtility::SPECIAL_KEYS['ATTRIBUTES']])) {
-                                $transUnitTagAttributes = $transUnit[ConverterUtility::SPECIAL_KEYS['ATTRIBUTES']];
+                            if (isset($transUnit[XmlUtility::SPECIAL_KEYS['ATTRIBUTES']])) {
+                                $transUnitTagAttributes = $transUnit[XmlUtility::SPECIAL_KEYS['ATTRIBUTES']];
 
                                 if (true === $transUnitTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]) {
                                     $editableTranslations[$extensionKey][$arrayKey][$transUnitTagAttributes['id']][$languageKey] = $transUnit['target'] ?? $transUnit['source'];
