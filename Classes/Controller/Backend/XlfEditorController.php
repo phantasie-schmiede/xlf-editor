@@ -20,10 +20,11 @@ use JsonException;
 use PSB\PsbFoundation\Controller\Backend\AbstractModuleController;
 use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleAction;
 use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleConfig;
+use PSB\PsbFoundation\Traits\Properties\CacheManagerTrait;
 use PSB\PsbFoundation\Utility\ArrayUtility;
 use PSB\PsbFoundation\Utility\Xml\XmlUtility;
-use PSB\PsbXlfEditor\Utility\XlfUtility;
-use TYPO3\CMS\Core\Cache\CacheManager;
+use PSB\PsbXlfEditor\Service\XlfService;
+use PSB\PsbXlfEditor\Traits\Properties\XlfServiceTrait;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 use TYPO3\CMS\Extbase\Object\Exception;
@@ -36,6 +37,8 @@ use TYPO3\CMS\Extbase\Object\Exception;
  */
 class XlfEditorController extends AbstractModuleController
 {
+    use CacheManagerTrait, XlfServiceTrait;
+
     /**
      * @ModuleAction()
      * @throws Exception
@@ -43,7 +46,7 @@ class XlfEditorController extends AbstractModuleController
      */
     public function indexAction(): void
     {
-        $editableTranslations = XlfUtility::getEditableTranslations();
+        $editableTranslations = $this->xlfService->getEditableTranslations();
         $this->view->assign('translations', $editableTranslations);
     }
 
@@ -62,7 +65,7 @@ class XlfEditorController extends AbstractModuleController
         foreach ($labels as $languageKey => $localLangIds) {
             $fullPath = $filePath;
 
-            if (XlfUtility::DEFAULT_LANGUAGE_KEY !== $languageKey) {
+            if (XlfService::DEFAULT_LANGUAGE_KEY !== $languageKey) {
                 $fullPath = pathinfo($filePath, PATHINFO_DIRNAME) . '/' . $languageKey . '.' . pathinfo($filePath,
                         PATHINFO_BASENAME);
             }
@@ -75,9 +78,9 @@ class XlfEditorController extends AbstractModuleController
                 $index = ArrayUtility::inArrayRecursive($xmlData, $localLangId, true);
                 $arrayPath = explode('.', $index);
                 $transUnitPosition = $arrayPath[4];
-                $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['source'] = $labels[XlfUtility::DEFAULT_LANGUAGE_KEY][$localLangId];
+                $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['source'] = $labels[XlfService::DEFAULT_LANGUAGE_KEY][$localLangId];
 
-                if (XlfUtility::DEFAULT_LANGUAGE_KEY !== $languageKey) {
+                if (XlfService::DEFAULT_LANGUAGE_KEY !== $languageKey) {
                     $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['target'] = $localLangValue;
                 }
             }
@@ -86,7 +89,7 @@ class XlfEditorController extends AbstractModuleController
         }
 
         // Clear the l10n-cache. Otherwise the changes won't be displayed in the overview.
-        $this->get(CacheManager::class)->getCache('l10n')->flush();
+        $this->cacheManager->getCache('l10n')->flush();
         $this->redirect('index');
     }
 }

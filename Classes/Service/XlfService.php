@@ -14,25 +14,26 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace PSB\PsbXlfEditor\Utility;
+namespace PSB\PsbXlfEditor\Service;
 
 use JsonException;
 use PSB\PsbFoundation\Data\ExtensionInformationInterface;
-use PSB\PsbFoundation\Utility\ExtensionInformationUtility;
-use PSB\PsbFoundation\Utility\ObjectUtility;
+use PSB\PsbFoundation\Traits\Properties\ExtensionInformationServiceTrait;
 use PSB\PsbFoundation\Utility\Xml\XmlUtility;
-use TYPO3\CMS\Core\Localization\LocalizationFactory;
+use PSB\PsbXlfEditor\Traits\Properties\LocalizationFactoryTrait;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\Exception;
 
 /**
- * Class XlfUtility
+ * Class XlfService
  *
- * @package PSB\PsbXlfEditor\Utility
+ * @package PSB\PsbXlfEditor\Service
  */
-class XlfUtility
+class XlfService
 {
+    use ExtensionInformationServiceTrait, LocalizationFactoryTrait;
+
     public const DEFAULT_LANGUAGE_KEY = 'default';
     public const FILE_ENDING          = 'xlf';
 
@@ -41,14 +42,14 @@ class XlfUtility
      * @throws Exception
      * @throws JsonException
      */
-    public static function getEditableTranslations(): array
+    public function getEditableTranslations(): array
     {
-        $allExtensionInformation = ExtensionInformationUtility::getExtensionInformation();
+        $allExtensionInformation = $this->extensionInformationService->getExtensionInformation();
         $editableTranslations = [];
         $loadedExtensions = ExtensionManagementUtility::getLoadedExtensionListArray();
 
         foreach ($loadedExtensions as $extensionKey) {
-            $languageFileDirectory = ExtensionInformationUtility::getLanguageFilePath($extensionKey);
+            $languageFileDirectory = $this->extensionInformationService->getLanguageFilePath($extensionKey);
             $languageFiles = [];
             $languageFiles = GeneralUtility::getAllFilesAndFoldersInPath($languageFiles, $languageFileDirectory,
                 self::FILE_ENDING);
@@ -73,7 +74,7 @@ class XlfUtility
                  * @see \PSB\PsbFoundation\Data\ExtensionInformationInterface
                  */
                 if (isset($allExtensionInformation[$extensionKey]) && true === $allExtensionInformation[$extensionKey]::ALLOW_LANGUAGE_FILE_EDITING) {
-                    self::addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
+                    $this->addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
                         $languageKey);
                 } else {
                     $xmlData = XmlUtility::convertFromXml(file_get_contents($languageFile));
@@ -82,7 +83,7 @@ class XlfUtility
                     if (isset($fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME])
                         && true === $fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]
                     ) {
-                        self::addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
+                        $this->addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
                             $languageKey);
                     } elseif (is_iterable($xmlData['xliff']['file']['body']['trans-unit'])) {
                         foreach ($xmlData['xliff']['file']['body']['trans-unit'] as $transUnit) {
@@ -106,22 +107,20 @@ class XlfUtility
      * @param        $translations
      * @param string $languageFile
      * @param string $languageKey
-     *
-     * @throws Exception
      */
-    private static function addAllTranslations(
+    private function addAllTranslations(
         &$translations,
         string $languageFile,
         string $languageKey
     ): void {
-        $parsedData = ObjectUtility::get(LocalizationFactory::class)->getParsedData($languageFile, $languageKey);
+        $parsedData = $this->localizationFactory->getParsedData($languageFile, $languageKey);
 
         if (!is_array($translations)) {
             $translations = [];
         }
 
         $translations = array_merge_recursive($translations,
-            self::rearrangeTranslationArray($parsedData, $languageKey));
+            $this->rearrangeTranslationArray($parsedData, $languageKey));
     }
 
     /**
@@ -130,7 +129,7 @@ class XlfUtility
      *
      * @return array
      */
-    private static function rearrangeTranslationArray(array $translations, string $languageKey): array
+    private function rearrangeTranslationArray(array $translations, string $languageKey): array
     {
         $rearrangedTranslations = [];
 
