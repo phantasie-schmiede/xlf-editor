@@ -38,6 +38,43 @@ class XlfService
     public const FILE_ENDING          = 'xlf';
 
     /**
+     * @param        $translations
+     * @param string $languageFile
+     * @param string $languageKey
+     */
+    private function addAllTranslations(
+        &$translations,
+        string $languageFile,
+        string $languageKey
+    ): void {
+        $parsedData = $this->localizationFactory->getParsedData($languageFile, $languageKey);
+
+        if (!is_array($translations)) {
+            $translations = [];
+        }
+
+        $translations = array_merge_recursive($translations,
+            $this->rearrangeTranslationArray($parsedData, $languageKey));
+    }
+
+    /**
+     * @param array  $translations
+     * @param string $languageKey
+     *
+     * @return array
+     */
+    private function rearrangeTranslationArray(array $translations, string $languageKey): array
+    {
+        $rearrangedTranslations = [];
+
+        foreach ($translations[$languageKey] as $id => $translation) {
+            $rearrangedTranslations[$id][$languageKey] = $translation[0]['target'];
+        }
+
+        return $rearrangedTranslations;
+    }
+
+    /**
      * @return array
      * @throws Exception
      * @throws JsonException
@@ -73,7 +110,7 @@ class XlfService
                  *
                  * @see \PSB\PsbFoundation\Data\ExtensionInformationInterface
                  */
-                if (isset($allExtensionInformation[$extensionKey]) && true === $allExtensionInformation[$extensionKey]::ALLOW_LANGUAGE_FILE_EDITING) {
+                if (isset($allExtensionInformation[$extensionKey]) && defined(get_class($allExtensionInformation[$extensionKey]) . '::ALLOW_LANGUAGE_FILE_EDITING') && true === $allExtensionInformation[$extensionKey]::ALLOW_LANGUAGE_FILE_EDITING) {
                     $this->addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
                         $languageKey);
                 } else {
@@ -101,42 +138,5 @@ class XlfService
         }
 
         return $editableTranslations;
-    }
-
-    /**
-     * @param        $translations
-     * @param string $languageFile
-     * @param string $languageKey
-     */
-    private function addAllTranslations(
-        &$translations,
-        string $languageFile,
-        string $languageKey
-    ): void {
-        $parsedData = $this->localizationFactory->getParsedData($languageFile, $languageKey);
-
-        if (!is_array($translations)) {
-            $translations = [];
-        }
-
-        $translations = array_merge_recursive($translations,
-            $this->rearrangeTranslationArray($parsedData, $languageKey));
-    }
-
-    /**
-     * @param array  $translations
-     * @param string $languageKey
-     *
-     * @return array
-     */
-    private function rearrangeTranslationArray(array $translations, string $languageKey): array
-    {
-        $rearrangedTranslations = [];
-
-        foreach ($translations[$languageKey] as $id => $translation) {
-            $rearrangedTranslations[$id][$languageKey] = $translation[0]['target'];
-        }
-
-        return $rearrangedTranslations;
     }
 }
