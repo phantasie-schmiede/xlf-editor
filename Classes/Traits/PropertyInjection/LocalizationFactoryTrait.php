@@ -14,7 +14,7 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace PSB\PsbXlfEditor\Traits\Properties;
+namespace PSB\PsbXlfEditor\Traits\PropertyInjection;
 
 use TYPO3\CMS\Core\Localization\LocalizationFactory;
 
