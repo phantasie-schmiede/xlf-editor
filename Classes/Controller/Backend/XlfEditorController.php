@@ -18,8 +18,8 @@ namespace PSB\PsbXlfEditor\Controller\Backend;
 
 use JsonException;
 use PSB\PsbFoundation\Controller\Backend\AbstractModuleController;
-use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleAction;
-use PSB\PsbFoundation\Service\DocComment\Annotations\ModuleConfig;
+use PSB\PsbFoundation\Annotation\ModuleAction;
+use PSB\PsbFoundation\Annotation\ModuleConfig;
 use PSB\PsbFoundation\Traits\PropertyInjection\CacheManagerTrait;
 use PSB\PsbFoundation\Utility\ArrayUtility;
 use PSB\PsbFoundation\Utility\Xml\XmlUtility;
@@ -33,7 +33,7 @@ use TYPO3\CMS\Extbase\Object\Exception;
  * Class XlfEditorController
  *
  * @package PSB\PsbXlfEditor\Controller\Backend
- * @ModuleConfig(mainModuleName=tools)
+ * @ModuleConfig(mainModuleName="tools")
  */
 class XlfEditorController extends AbstractModuleController
 {
