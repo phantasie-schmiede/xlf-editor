@@ -14,7 +14,7 @@
 	"description": "Backend module which allows to edit XLF files",
 	"extra": {
 		"typo3/cms": {
-			"extension-key": "psb_xlf-editor"
+			"extension-key": "psb_xlf_editor"
 		}
 	},
 	"keywords": [
