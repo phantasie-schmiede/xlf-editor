@@ -10,16 +10,13 @@ $EM_CONF['psb_xlf_editor'] = [
         'conflicts' => [
         ],
         'depends'   => [
-            'psb_foundation' => '0.1.0',
-            'typo3'          => '10.4.2-10.4.99',
+            'psb_foundation' => '1.0.0',
         ],
         'suggests'  => [
         ],
     ],
-    'createDirs'       => '',
     'description'      => 'Backend module which allows to edit XLF files',
     'state'            => 'alpha',
     'title'            => 'PSbits | XLF-editor',
-    'uploadfolder'     => false,
     'version'          => '0.0.1',
 ];

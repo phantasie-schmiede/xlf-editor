@@ -1,0 +1,31 @@
+{
+	"authors": [
+		{
+			"email": "dn@phantasie-schmiede.de",
+			"name": "Daniel Ablass",
+			"role": "Developer"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"PSB\\PsbXlfEditor\\": "Classes/"
+		}
+	},
+	"description": "Backend module which allows to edit XLF files",
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "psb_xlf-editor"
+		}
+	},
+	"keywords": [
+		"extension",
+		"translation",
+		"typo3"
+	],
+	"license": "GPL-2.0-or-later",
+	"name": "psb/psb-xlf-editor",
+	"require": {
+		"psb/psb-foundation": "@dev"
+	},
+	"type": "typo3-cms-extension"
+}
