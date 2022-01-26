@@ -21,9 +21,10 @@ use PSB\PsbFoundation\Data\ExtensionInformationInterface;
 use PSB\PsbFoundation\Traits\PropertyInjection\ExtensionInformationServiceTrait;
 use PSB\PsbFoundation\Utility\Xml\XmlUtility;
 use PSB\PsbXlfEditor\Traits\PropertyInjection\LocalizationFactoryTrait;
+use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\Exception;
+use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
 
 /**
  * Class XlfService
@@ -76,8 +77,9 @@ class XlfService
 
     /**
      * @return array
-     * @throws Exception
+     * @throws InvalidConfigurationTypeException
      * @throws JsonException
+     * @throws UnknownPackageException
      */
     public function getEditableTranslations(): array
     {

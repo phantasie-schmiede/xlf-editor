@@ -17,17 +17,19 @@ declare(strict_types=1);
 namespace PSB\PsbXlfEditor\Controller\Backend;
 
 use JsonException;
-use PSB\PsbFoundation\Controller\Backend\AbstractModuleController;
 use PSB\PsbFoundation\Annotation\ModuleAction;
 use PSB\PsbFoundation\Annotation\ModuleConfig;
+use PSB\PsbFoundation\Controller\Backend\AbstractModuleController;
 use PSB\PsbFoundation\Traits\PropertyInjection\CacheManagerTrait;
 use PSB\PsbFoundation\Utility\ArrayUtility;
 use PSB\PsbFoundation\Utility\Xml\XmlUtility;
 use PSB\PsbXlfEditor\Service\XlfService;
 use PSB\PsbXlfEditor\Traits\PropertyInjection\XlfServiceTrait;
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
+use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
+use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
-use TYPO3\CMS\Extbase\Object\Exception;
 
 /**
  * Class XlfEditorController
@@ -41,24 +43,28 @@ class XlfEditorController extends AbstractModuleController
 
     /**
      * @ModuleAction()
-     * @throws Exception
+     * @return ResponseInterface
+     * @throws InvalidConfigurationTypeException
      * @throws JsonException
+     * @throws UnknownPackageException
      */
-    public function indexAction(): void
+    public function indexAction(): ResponseInterface
     {
         $editableTranslations = $this->xlfService->getEditableTranslations();
         $this->view->assign('translations', $editableTranslations);
+
+        return $this->render();
     }
 
     /**
      * @param string $filePath
      * @param array  $labels
      *
-     * @ModuleAction(doNotRender=true)
-     * @throws Exception
+     * @throws InvalidConfigurationTypeException
      * @throws JsonException
      * @throws NoSuchCacheException
      * @throws StopActionException
+     * @ModuleAction()
      */
     public function saveChangesAction(string $filePath, array $labels): void
     {
