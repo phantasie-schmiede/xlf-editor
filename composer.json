@@ -25,7 +25,7 @@
 	"license": "GPL-2.0-or-later",
 	"name": "psb/psb-xlf-editor",
 	"require": {
-		"psb/psb-foundation": "@dev"
+		"psb/psb-foundation": "^2.0"
 	},
 	"type": "typo3-cms-extension"
 }
