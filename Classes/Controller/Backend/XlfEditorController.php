@@ -39,7 +39,8 @@ use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
  */
 class XlfEditorController extends AbstractModuleController
 {
-    use CacheManagerTrait, XlfServiceTrait;
+    use CacheManagerTrait;
+    use XlfServiceTrait;
 
     /**
      * @ModuleAction()
@@ -94,7 +95,7 @@ class XlfEditorController extends AbstractModuleController
             file_put_contents($fullPath, $xmlDeclaration . XmlUtility::convertToXml($xmlData));
         }
 
-        // Clear the l10n-cache. Otherwise the changes won't be displayed in the overview.
+        // Clear the l10n-cache. Otherwise, the changes won't be displayed in the overview.
         $this->cacheManager->getCache('l10n')->flush();
         $this->redirect('index');
     }
