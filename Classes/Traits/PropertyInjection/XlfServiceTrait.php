@@ -14,14 +14,14 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace PSB\PsbXlfEditor\Traits\PropertyInjection;
+namespace PSBits\XlfEditor\Traits\PropertyInjection;
 
-use PSB\PsbXlfEditor\Service\XlfService;
+use PSBits\XlfEditor\Service\XlfService;
 
 /**
  * Trait XlfServiceTrait
  *
- * @package PSB\PsbXlfEditor\Traits\Properties
+ * @package PSBits\XlfEditor\Traits\Properties
  */
 trait XlfServiceTrait
 {

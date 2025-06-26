@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-$EM_CONF['psb_xlf_editor'] = [
+$EM_CONF['xlf_editor'] = [
     'author'           => 'Daniel Ablass',
     'author_email'     => 'dn@phantasie-schmiede.de',
     'category'         => 'module',
@@ -10,13 +10,13 @@ $EM_CONF['psb_xlf_editor'] = [
         'conflicts' => [
         ],
         'depends'   => [
-            'psb_foundation' => '1.0.0',
+            'foundation' => '3.0',
         ],
         'suggests'  => [
         ],
     ],
     'description'      => 'Backend module which allows to edit XLF files',
     'state'            => 'alpha',
-    'title'            => 'PSbits | XLF-editor',
+    'title'            => 'PSBits | XLF-editor',
     'version'          => '0.0.1',
 ];

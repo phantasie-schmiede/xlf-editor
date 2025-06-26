@@ -14,17 +14,17 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace PSB\PsbXlfEditor\Controller\Backend;
+namespace PSBits\XlfEditor\Controller\Backend;
 
 use JsonException;
-use PSB\PsbFoundation\Annotation\ModuleAction;
-use PSB\PsbFoundation\Annotation\ModuleConfig;
-use PSB\PsbFoundation\Controller\Backend\AbstractModuleController;
-use PSB\PsbFoundation\Traits\PropertyInjection\CacheManagerTrait;
-use PSB\PsbFoundation\Utility\ArrayUtility;
-use PSB\PsbFoundation\Utility\Xml\XmlUtility;
-use PSB\PsbXlfEditor\Service\XlfService;
-use PSB\PsbXlfEditor\Traits\PropertyInjection\XlfServiceTrait;
+use PSBits\Foundation\Annotation\ModuleAction;
+use PSBits\Foundation\Annotation\ModuleConfig;
+use PSBits\Foundation\Controller\Backend\AbstractModuleController;
+use PSBits\Foundation\Traits\PropertyInjection\CacheManagerTrait;
+use PSBits\Foundation\Utility\ArrayUtility;
+use PSBits\Foundation\Utility\Xml\XmlUtility;
+use PSBits\XlfEditor\Service\XlfService;
+use PSBits\XlfEditor\Traits\PropertyInjection\XlfServiceTrait;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
 use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
@@ -34,7 +34,7 @@ use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 /**
  * Class XlfEditorController
  *
- * @package PSB\PsbXlfEditor\Controller\Backend
+ * @package PSBits\XlfEditor\Controller\Backend
  * @ModuleConfig(mainModuleName="tools")
  */
 class XlfEditorController extends AbstractModuleController

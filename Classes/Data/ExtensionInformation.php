@@ -14,14 +14,14 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace PSB\PsbXlfEditor\Data;
+namespace PSBits\XlfEditor\Data;
 
-use PSB\PsbFoundation\Data\AbstractExtensionInformation;
-use PSB\PsbXlfEditor\Controller\Backend\XlfEditorController;
+use PSBits\Foundation\Data\AbstractExtensionInformation;
+use PSBits\XlfEditor\Controller\Backend\XlfEditorController;
 
 /**
  * Class ExtensionInformation
- * @package PSB\PsbXlfEditor\Data
+ * @package PSBits\XlfEditor\Data
  */
 class ExtensionInformation extends AbstractExtensionInformation
 {

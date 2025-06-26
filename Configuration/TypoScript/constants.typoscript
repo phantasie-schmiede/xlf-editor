@@ -1,10 +1,10 @@
-module.tx_psbxlfeditor {
+module.tx_xlfeditor {
   view {
-    # cat=plugin.tx_tx_psbxlfeditor/file; type=string; label=Path to template layouts (BE)
-    layoutRootPath = EXT:psb_xlf_editor/Resources/Private/Layouts/Backend
-    # cat=plugin.tx_tx_psbxlfeditor/file; type=string; label=Path to template partials (BE)
-    partialRootPath = EXT:psb_xlf_editor/Resources/Private/Partials/Backend
-    # cat=plugin.tx_tx_psbxlfeditor/file; type=string; label=Path to template root (BE)
-    templateRootPath = EXT:psb_xlf_editor/Resources/Private/Templates/Backend
+    # cat=plugin.tx_xlfeditor/file; type=string; label=Path to template layouts (BE)
+    layoutRootPath = EXT:xlf_editor/Resources/Private/Layouts/Backend
+    # cat=plugin.tx_xlfeditor/file; type=string; label=Path to template partials (BE)
+    partialRootPath = EXT:xlf_editor/Resources/Private/Partials/Backend
+    # cat=plugin.tx_xlfeditor/file; type=string; label=Path to template root (BE)
+    templateRootPath = EXT:xlf_editor/Resources/Private/Templates/Backend
   }
 }

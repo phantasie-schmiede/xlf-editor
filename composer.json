@@ -8,13 +8,13 @@
 	],
 	"autoload": {
 		"psr-4": {
-			"PSB\\PsbXlfEditor\\": "Classes/"
+			"PSBits\\XlfEditor\\": "Classes/"
 		}
 	},
 	"description": "Backend module which allows to edit XLF files",
 	"extra": {
 		"typo3/cms": {
-			"extension-key": "psb_xlf_editor"
+			"extension-key": "xlf_editor"
 		}
 	},
 	"keywords": [
@@ -23,9 +23,9 @@
 		"typo3"
 	],
 	"license": "GPL-2.0-or-later",
-	"name": "psb/psb-xlf-editor",
+	"name": "psbits/xlf-editor",
 	"require": {
-		"psb/psb-foundation": "^2.0"
+		"psbits/foundation": "^3.0"
 	},
 	"type": "typo3-cms-extension"
 }

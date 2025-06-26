@@ -14,14 +14,14 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace PSB\PsbXlfEditor\ViewHelpers;
+namespace PSBits\XlfEditor\ViewHelpers;
 
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * Class GetShortLanguageFilePathViewHelper
  *
- * @package PSB\PsbXlfEditor\ViewHelpers
+ * @package PSBits\XlfEditor\ViewHelpers
  */
 class GetShortLanguageFilePathViewHelper extends AbstractViewHelper
 {

@@ -14,14 +14,14 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace PSB\PsbXlfEditor\Service;
+namespace PSBits\XlfEditor\Service;
 
 use JsonException;
-use PSB\PsbFoundation\Data\ExtensionInformationInterface;
-use PSB\PsbFoundation\Exceptions\ImplementationException;
-use PSB\PsbFoundation\Traits\PropertyInjection\ExtensionInformationServiceTrait;
-use PSB\PsbFoundation\Utility\Xml\XmlUtility;
-use PSB\PsbXlfEditor\Traits\PropertyInjection\LocalizationFactoryTrait;
+use PSBits\Foundation\Data\ExtensionInformationInterface;
+use PSBits\Foundation\Exceptions\ImplementationException;
+use PSBits\Foundation\Traits\PropertyInjection\ExtensionInformationServiceTrait;
+use PSBits\Foundation\Utility\Xml\XmlUtility;
+use PSBits\XlfEditor\Traits\PropertyInjection\LocalizationFactoryTrait;
 use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -30,7 +30,7 @@ use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
 /**
  * Class XlfService
  *
- * @package PSB\PsbXlfEditor\Service
+ * @package PSBits\XlfEditor\Service
  */
 class XlfService
 {
@@ -38,7 +38,7 @@ class XlfService
     use LocalizationFactoryTrait;
 
     /**
-     * @TODO: Moved from psb_foundation, has to be adapted!
+     * @TODO: Moved from foundation, has to be adapted!
      *
      * If defined as true, language files of this extension will be editable in the Backend via the Language file
      * editor module. You can't override this constant if you implement this interface directly, but you can achieve
@@ -50,7 +50,7 @@ class XlfService
      * <?xml encoding="utf-8" standalone="yes" version="1.0" ?>
      * <xliff version="1.0">
      *     <file allow_language_file_editing="true" datatype="plaintext" date="2020-01-17T12:30:00+01:00"
-     *     original="messages" product-name="psb_foundation" source-language="en">
+     *     original="messages" product-name="foundation" source-language="en">
      *         <header />
      *         <body>
      *             <trans-unit id="example1">
@@ -67,7 +67,7 @@ class XlfService
      * <?xml encoding="utf-8" standalone="yes" version="1.0" ?>
      * <xliff version="1.0">
      *     <file datatype="plaintext" date="2020-01-17T12:30:00+01:00" original="messages"
-     *     product-name="psb_foundation" source-language="en">
+     *     product-name="foundation" source-language="en">
      *         <header />
      *         <body>
      *             <trans-unit id="example1">
@@ -159,7 +159,7 @@ class XlfService
                  * files or if current file contains a special XML-attribute in its <file>-tag. Otherwise look at each
                  * translation separately and check if it may be edited.
                  *
-                 * @see \PSB\PsbFoundation\Data\ExtensionInformationInterface
+                 * @see \PSBits\Foundation\Data\ExtensionInformationInterface
                  */
                 if (isset($allExtensionInformation[$extensionKey]) && defined(get_class($allExtensionInformation[$extensionKey]) . '::ALLOW_LANGUAGE_FILE_EDITING') && true === $allExtensionInformation[$extensionKey]::ALLOW_LANGUAGE_FILE_EDITING) {
                     $this->addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,

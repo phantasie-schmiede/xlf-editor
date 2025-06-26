@@ -1,7 +1,6 @@
 <html data-namespace-typo3-fluid="true"
       xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-      xmlns:psb="http://typo3.org/ns/PSB/PsbXlfEditor/ViewHelpers"
->
+      xmlns:psbits="http://typo3.org/ns/PSBits/XlfEditor/ViewHelpers">
 <div class="panel-group" id="accordion-extensions">
     <f:for as="extensionFiles" each="{translations}" key="extensionKey">
         <div class="panel panel-default">
@@ -13,9 +12,9 @@
                     <div class="panel-group" id="accordion-{extensionKey}">
                         <f:for as="fileTranslations" each="{extensionFiles}" key="filePath">
                             <div class="panel panel-default">
-                                <f:variable name="filename" value="{psb:getFilenameFromPath(path: filePath)}" />
+                                <f:variable name="filename" value="{psbits:getFilenameFromPath(path: filePath)}" />
                                 <button class="list-group-item" data-toggle="collapse" data-target="#collapse-{extensionKey}-{filename}" aria-expanded="true" aria-controls="collapse-{extensionKey}">
-                                    <b>{filename}</b> ({psb:getShortLanguageFilePath(path: filePath)})
+                                    <b>{filename}</b> ({psbits:getShortLanguageFilePath(path: filePath)})
                                 </button>
                                 <div id="collapse-{extensionKey}-{filename}" class="collapse collapsed" aria-labelledby="{extensionKey}-{filename}" data-parent="#accordion-{extensionKey}">
                                     <div class="panel-body">
