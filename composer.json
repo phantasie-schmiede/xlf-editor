@@ -25,7 +25,12 @@
 	"license": "GPL-2.0-or-later",
 	"name": "psbits/xlf-editor",
 	"require": {
-		"psbits/foundation": "^3.0"
+		"php": "^8.3",
+		"psbits/foundation": "^3.0",
+		"typo3/cms-core": "^13.4"
+	},
+	"require-dev": {
+		"roave/security-advisories": "dev-latest"
 	},
 	"type": "typo3-cms-extension"
 }

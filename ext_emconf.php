@@ -1,22 +1,21 @@
 <?php
-declare(strict_types=1);
 
-$EM_CONF['xlf_editor'] = [
+$EM_CONF[$_EXTKEY] = [
     'author'           => 'Daniel Ablass',
     'author_email'     => 'dn@phantasie-schmiede.de',
     'category'         => 'module',
     'clearCacheOnLoad' => false,
     'constraints'      => [
-        'conflicts' => [
-        ],
+        'conflicts' => [],
         'depends'   => [
             'foundation' => '3.0',
+            'php'        => '8.3',
+            'typo3'      => '13.4.0-13.4.99',
         ],
-        'suggests'  => [
-        ],
+        'suggests'  => [],
     ],
     'description'      => 'Backend module which allows to edit XLF files',
     'state'            => 'alpha',
     'title'            => 'PSBits | XLF-editor',
-    'version'          => '0.0.1',
+    'version'          => '0.1.0',
 ];
