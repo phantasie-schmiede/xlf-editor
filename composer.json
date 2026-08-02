@@ -22,7 +22,7 @@
 		"translation",
 		"typo3"
 	],
-	"license": "GPL-2.0-or-later",
+	"license": "GPL-3.0-or-later",
 	"name": "psbits/xlf-editor",
 	"require": {
 		"php": "^8.3",
