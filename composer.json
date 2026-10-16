@@ -11,10 +11,20 @@
             "PSBits\\XlfEditor\\": "Classes/"
         }
     },
+    "config": {
+        "allow-plugins": {
+            "typo3/class-alias-loader": true,
+            "typo3/cms-composer-installers": true
+        },
+        "bin-dir": ".Build/bin",
+        "sort-packages": true,
+        "vendor-dir": ".Build/vendor"
+    },
     "description": "Backend module which allows to edit XLF files",
     "extra": {
         "typo3/cms": {
-            "extension-key": "xlf_editor"
+            "extension-key": "xlf_editor",
+            "web-dir": ".Build/public"
         }
     },
     "keywords": [

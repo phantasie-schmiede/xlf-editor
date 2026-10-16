@@ -19,13 +19,16 @@ namespace PSBits\XlfEditor\Service;
 use JsonException;
 use PSBits\Foundation\Data\ExtensionInformationInterface;
 use PSBits\Foundation\Exceptions\ImplementationException;
-use PSBits\Foundation\Traits\PropertyInjection\ExtensionInformationServiceTrait;
+use PSBits\Foundation\Service\ExtensionInformationService;
 use PSBits\Foundation\Utility\Xml\XmlUtility;
-use PSBits\XlfEditor\Traits\PropertyInjection\LocalizationFactoryTrait;
-use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use ReflectionException;
+use TYPO3\CMS\Core\Localization\LocalizationFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
+
+use function is_array;
 
 /**
  * Class XlfService
@@ -34,9 +37,6 @@ use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
  */
 class XlfService
 {
-    use ExtensionInformationServiceTrait;
-    use LocalizationFactoryTrait;
-
     /**
      * @TODO: Moved from foundation, has to be adapted!
      *
@@ -81,10 +81,16 @@ class XlfService
      * </xliff>
      */
     //    public const ALLOW_LANGUAGE_FILE_EDITING = false;
-    public const ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME = 'allow_language_file_editing';
+    public const string ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME = 'allow_language_file_editing';
 
-    public const DEFAULT_LANGUAGE_KEY = 'default';
-    public const FILE_ENDING          = 'xlf';
+    public const string DEFAULT_LANGUAGE_KEY = 'default';
+    public const string FILE_ENDING          = 'xlf';
+
+    public function __construct(
+        protected readonly ExtensionInformationService $extensionInformationService,
+        protected readonly LocalizationFactory         $localizationFactory,
+    ) {
+    }
 
     /**
      * @param        $translations
@@ -124,11 +130,12 @@ class XlfService
     }
 
     /**
-     * @return array
+     * @return array<string, array<string, array<string, array<string, string>>>>
+     * @throws ContainerExceptionInterface
      * @throws ImplementationException
-     * @throws InvalidConfigurationTypeException
      * @throws JsonException
-     * @throws UnknownPackageException
+     * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
     public function getEditableTranslations(): array
     {
@@ -146,7 +153,7 @@ class XlfService
                 $directoryName = pathinfo($languageFile, PATHINFO_DIRNAME);
                 $filename = pathinfo($languageFile, PATHINFO_FILENAME);
 
-                if (false !== mb_strpos($filename, '.')) {
+                if (str_contains($filename, '.')) {
                     [$languageKey, $filename] = explode('.', $filename);
                 } else {
                     $languageKey = self::DEFAULT_LANGUAGE_KEY;

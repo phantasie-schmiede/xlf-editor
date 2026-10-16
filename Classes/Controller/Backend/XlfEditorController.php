@@ -17,17 +17,19 @@ declare(strict_types=1);
 namespace PSBits\XlfEditor\Controller\Backend;
 
 use JsonException;
-use PSBits\Foundation\Annotation\ModuleAction;
-use PSBits\Foundation\Annotation\ModuleConfig;
+use PSBits\Foundation\Attribute\ModuleAction;
 use PSBits\Foundation\Controller\Backend\AbstractModuleController;
-use PSBits\Foundation\Traits\PropertyInjection\CacheManagerTrait;
+use PSBits\Foundation\Exceptions\ImplementationException;
 use PSBits\Foundation\Utility\ArrayUtility;
 use PSBits\Foundation\Utility\Xml\XmlUtility;
 use PSBits\XlfEditor\Service\XlfService;
-use PSBits\XlfEditor\Traits\PropertyInjection\XlfServiceTrait;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionException;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
-use TYPO3\CMS\Core\Package\Exception\UnknownPackageException;
 use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 
@@ -39,42 +41,52 @@ use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
  */
 class XlfEditorController extends AbstractModuleController
 {
-    use CacheManagerTrait;
-    use XlfServiceTrait;
+    public function __construct(
+        protected readonly CacheManager $cacheManager,
+        ModuleTemplateFactory           $moduleTemplateFactory,
+        protected readonly XlfService   $xlfService,
+    ) {
+        parent::__construct($moduleTemplateFactory);
+    }
 
     /**
-     * @ModuleAction()
      * @return ResponseInterface
-     * @throws InvalidConfigurationTypeException
      * @throws JsonException
-     * @throws UnknownPackageException
+     * @throws ImplementationException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
+    #[ModuleAction]
     public function indexAction(): ResponseInterface
     {
         $editableTranslations = $this->xlfService->getEditableTranslations();
         $this->view->assign('translations', $editableTranslations);
 
-        return $this->render();
+        return $this->htmlResponse();
     }
 
     /**
      * @param string $filePath
      * @param array  $labels
      *
-     * @throws InvalidConfigurationTypeException
+     * @throws ContainerExceptionInterface
      * @throws JsonException
      * @throws NoSuchCacheException
-     * @throws StopActionException
-     * @ModuleAction()
+     * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
+    #[ModuleAction]
     public function saveChangesAction(string $filePath, array $labels): void
     {
         foreach ($labels as $languageKey => $localLangIds) {
             $fullPath = $filePath;
 
             if (XlfService::DEFAULT_LANGUAGE_KEY !== $languageKey) {
-                $fullPath = pathinfo($filePath, PATHINFO_DIRNAME) . '/' . $languageKey . '.' . pathinfo($filePath,
-                        PATHINFO_BASENAME);
+                $fullPath = pathinfo($filePath, PATHINFO_DIRNAME) . '/' . $languageKey . '.' . pathinfo(
+                        $filePath,
+                        PATHINFO_BASENAME
+                    );
             }
 
             $xmlDeclaration = fgets(fopen($fullPath, 'rb'));
@@ -96,7 +108,8 @@ class XlfEditorController extends AbstractModuleController
         }
 
         // Clear the l10n-cache. Otherwise, the changes won't be displayed in the overview.
-        $this->cacheManager->getCache('l10n')->flush();
+        $this->cacheManager->getCache('l10n')
+            ->flush();
         $this->redirect('index');
     }
 }
