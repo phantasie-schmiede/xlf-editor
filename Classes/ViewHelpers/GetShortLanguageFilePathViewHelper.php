@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -34,7 +35,7 @@ class GetShortLanguageFilePathViewHelper extends AbstractViewHelper
     public function render(): string
     {
         $searchString = '/Resources/Private/Language/';
-        $offset = mb_strpos($this->arguments['path'], $searchString);
+        $offset       = mb_strpos($this->arguments['path'], $searchString);
 
         return mb_substr($this->arguments['path'], $offset + mb_strlen($searchString));
     }

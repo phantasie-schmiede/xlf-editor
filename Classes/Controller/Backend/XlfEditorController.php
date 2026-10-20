@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -30,8 +31,6 @@ use ReflectionException;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
-use TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException;
-use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
 
 /**
  * Class XlfEditorController
@@ -84,19 +83,19 @@ class XlfEditorController extends AbstractModuleController
 
             if (XlfService::DEFAULT_LANGUAGE_KEY !== $languageKey) {
                 $fullPath = pathinfo($filePath, PATHINFO_DIRNAME) . '/' . $languageKey . '.' . pathinfo(
-                        $filePath,
-                        PATHINFO_BASENAME
-                    );
+                    $filePath,
+                    PATHINFO_BASENAME
+                );
             }
 
             $xmlDeclaration = fgets(fopen($fullPath, 'rb'));
-            $xmlData = XmlUtility::convertFromXml(file_get_contents($fullPath));
+            $xmlData        = XmlUtility::convertFromXml(file_get_contents($fullPath));
 
             foreach ($localLangIds as $localLangId => $localLangValue) {
                 // index looks like xliff.file.body.trans-unit.X.@attributes.id, where X is the position among all translations in that file
-                $index = ArrayUtility::inArrayRecursive($xmlData, $localLangId, true);
-                $arrayPath = explode('.', $index);
-                $transUnitPosition = $arrayPath[4];
+                $index                                                                        = ArrayUtility::inArrayRecursive($xmlData, $localLangId, true);
+                $arrayPath                                                                    = explode('.', $index);
+                $transUnitPosition                                                            = $arrayPath[4];
                 $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['source'] = $labels[XlfService::DEFAULT_LANGUAGE_KEY][$localLangId];
 
                 if (XlfService::DEFAULT_LANGUAGE_KEY !== $languageKey) {

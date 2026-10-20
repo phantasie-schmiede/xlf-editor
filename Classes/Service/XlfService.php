@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -82,9 +83,8 @@ class XlfService
      */
     //    public const ALLOW_LANGUAGE_FILE_EDITING = false;
     public const string ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME = 'allow_language_file_editing';
-
-    public const string DEFAULT_LANGUAGE_KEY = 'default';
-    public const string FILE_ENDING          = 'xlf';
+    public const string DEFAULT_LANGUAGE_KEY                       = 'default';
+    public const string FILE_ENDING                                = 'xlf';
 
     public function __construct(
         protected readonly ExtensionInformationService $extensionInformationService,
@@ -108,8 +108,10 @@ class XlfService
             $translations = [];
         }
 
-        $translations = array_merge_recursive($translations,
-            $this->rearrangeTranslationArray($parsedData, $languageKey));
+        $translations = array_merge_recursive(
+            $translations,
+            $this->rearrangeTranslationArray($parsedData, $languageKey)
+        );
     }
 
     /**
@@ -140,18 +142,21 @@ class XlfService
     public function getEditableTranslations(): array
     {
         $allExtensionInformation = $this->extensionInformationService->getExtensionInformation();
-        $editableTranslations = [];
-        $loadedExtensions = ExtensionManagementUtility::getLoadedExtensionListArray();
+        $editableTranslations    = [];
+        $loadedExtensions        = ExtensionManagementUtility::getLoadedExtensionListArray();
 
         foreach ($loadedExtensions as $extensionKey) {
             $languageFileDirectory = $this->extensionInformationService->getLanguageFilePath($extensionKey);
-            $languageFiles = [];
-            $languageFiles = GeneralUtility::getAllFilesAndFoldersInPath($languageFiles, $languageFileDirectory,
-                self::FILE_ENDING);
+            $languageFiles         = [];
+            $languageFiles         = GeneralUtility::getAllFilesAndFoldersInPath(
+                $languageFiles,
+                $languageFileDirectory,
+                self::FILE_ENDING
+            );
 
             foreach ($languageFiles as $languageFile) {
                 $directoryName = pathinfo($languageFile, PATHINFO_DIRNAME);
-                $filename = pathinfo($languageFile, PATHINFO_FILENAME);
+                $filename      = pathinfo($languageFile, PATHINFO_FILENAME);
 
                 if (str_contains($filename, '.')) {
                     [$languageKey, $filename] = explode('.', $filename);
@@ -169,17 +174,23 @@ class XlfService
                  * @see \PSBits\Foundation\Data\ExtensionInformationInterface
                  */
                 if (isset($allExtensionInformation[$extensionKey]) && defined(get_class($allExtensionInformation[$extensionKey]) . '::ALLOW_LANGUAGE_FILE_EDITING') && true === $allExtensionInformation[$extensionKey]::ALLOW_LANGUAGE_FILE_EDITING) {
-                    $this->addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
-                        $languageKey);
+                    $this->addAllTranslations(
+                        $editableTranslations[$extensionKey][$arrayKey],
+                        $languageFile,
+                        $languageKey
+                    );
                 } else {
-                    $xmlData = XmlUtility::convertFromXml(file_get_contents($languageFile));
+                    $xmlData           = XmlUtility::convertFromXml(file_get_contents($languageFile));
                     $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::SPECIAL_KEYS['ATTRIBUTES']];
 
                     if (isset($fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME])
                         && true === $fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]
                     ) {
-                        $this->addAllTranslations($editableTranslations[$extensionKey][$arrayKey], $languageFile,
-                            $languageKey);
+                        $this->addAllTranslations(
+                            $editableTranslations[$extensionKey][$arrayKey],
+                            $languageFile,
+                            $languageKey
+                        );
                     } elseif (is_iterable($xmlData['xliff']['file']['body']['trans-unit'])) {
                         foreach ($xmlData['xliff']['file']['body']['trans-unit'] as $transUnit) {
                             if (isset($transUnit[XmlUtility::SPECIAL_KEYS['ATTRIBUTES']])) {
