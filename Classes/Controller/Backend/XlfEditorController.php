@@ -66,8 +66,8 @@ class XlfEditorController extends AbstractModuleController
     }
 
     /**
-     * @param string $filePath
-     * @param array  $labels
+     * @param string                               $filePath
+     * @param array<string, array<string, string>> $labels
      *
      * @throws ContainerExceptionInterface
      * @throws JsonException
@@ -93,8 +93,13 @@ class XlfEditorController extends AbstractModuleController
 
             foreach ($localLangIds as $localLangId => $localLangValue) {
                 // index looks like xliff.file.body.trans-unit.X.@attributes.id, where X is the position among all translations in that file
-                $index                                                                        = ArrayUtility::inArrayRecursive($xmlData, $localLangId, true);
-                $arrayPath                                                                    = explode('.', $index);
+                $indexes = ArrayUtility::inArrayRecursive($xmlData, $localLangId, true);
+
+                if ([] === $indexes) {
+                    continue;
+                }
+
+                $arrayPath                                                                    = explode('.', $indexes[0]);
                 $transUnitPosition                                                            = $arrayPath[4];
                 $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['source'] = $labels[XlfService::DEFAULT_LANGUAGE_KEY][$localLangId];
 

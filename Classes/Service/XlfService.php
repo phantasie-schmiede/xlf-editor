@@ -18,7 +18,6 @@ declare(strict_types=1);
 namespace PSBits\XlfEditor\Service;
 
 use JsonException;
-use PSBits\Foundation\Data\ExtensionInformationInterface;
 use PSBits\Foundation\Exceptions\ImplementationException;
 use PSBits\Foundation\Service\ExtensionInformationService;
 use PSBits\Foundation\Utility\Xml\XmlUtility;
@@ -39,8 +38,6 @@ use function is_array;
 class XlfService
 {
     /**
-     * @TODO: Moved from foundation, has to be adapted!
-     *
      * If defined as true, language files of this extension will be editable in the Backend via the Language file
      * editor module. You can't override this constant if you implement this interface directly, but you can achieve
      * this when extending the AbstractExtensionInformation class (which you should definitely do). Another way to
@@ -93,7 +90,8 @@ class XlfService
     }
 
     /**
-     * @param        $translations
+     * @param array<string, array<string, string>>|null $translations
+     * @param-out array<string, array<string, string>> $translations
      * @param string $languageFile
      * @param string $languageKey
      */
@@ -108,17 +106,20 @@ class XlfService
             $translations = [];
         }
 
-        $translations = array_merge_recursive(
-            $translations,
-            $this->rearrangeTranslationArray($parsedData, $languageKey)
-        );
+        $newTranslations = $this->rearrangeTranslationArray($parsedData, $languageKey);
+
+        foreach ($newTranslations as $id => $byLanguage) {
+            foreach ($byLanguage as $language => $label) {
+                $translations[$id][$language] = $label;
+            }
+        }
     }
 
     /**
-     * @param array  $translations
-     * @param string $languageKey
+     * @param array<string, array<string, array<int, array<string, string>>>> $translations
+     * @param string                                                          $languageKey
      *
-     * @return array
+     * @return array<string, array<string, string>>
      */
     private function rearrangeTranslationArray(array $translations, string $languageKey): array
     {
@@ -141,12 +142,18 @@ class XlfService
      */
     public function getEditableTranslations(): array
     {
-        $allExtensionInformation = $this->extensionInformationService->getExtensionInformation();
-        $editableTranslations    = [];
-        $loadedExtensions        = ExtensionManagementUtility::getLoadedExtensionListArray();
+        $editableTranslations = [];
+        $loadedExtensions     = ExtensionManagementUtility::getLoadedExtensionListArray();
 
         foreach ($loadedExtensions as $extensionKey) {
-            $languageFileDirectory = $this->extensionInformationService->getLanguageFilePath($extensionKey);
+            try {
+                $extensionInformation = $this->extensionInformationService->getExtensionInformation($extensionKey);
+            } catch (ImplementationException) {
+                // Extension without an ExtensionInformation class; attribute-based editing still applies
+                $extensionInformation = null;
+            }
+
+            $languageFileDirectory = ExtensionManagementUtility::extPath($extensionKey) . 'Resources/Private/Language/';
             $languageFiles         = [];
             $languageFiles         = GeneralUtility::getAllFilesAndFoldersInPath(
                 $languageFiles,
@@ -173,7 +180,9 @@ class XlfService
                  *
                  * @see \PSBits\Foundation\Data\ExtensionInformationInterface
                  */
-                if (isset($allExtensionInformation[$extensionKey]) && defined(get_class($allExtensionInformation[$extensionKey]) . '::ALLOW_LANGUAGE_FILE_EDITING') && true === $allExtensionInformation[$extensionKey]::ALLOW_LANGUAGE_FILE_EDITING) {
+                $extensionInformationClass = null !== $extensionInformation ? get_class($extensionInformation) : '';
+
+                if ('' !== $extensionInformationClass && defined($extensionInformationClass . '::ALLOW_LANGUAGE_FILE_EDITING') && true === $extensionInformationClass::ALLOW_LANGUAGE_FILE_EDITING) {
                     $this->addAllTranslations(
                         $editableTranslations[$extensionKey][$arrayKey],
                         $languageFile,
@@ -181,10 +190,10 @@ class XlfService
                     );
                 } else {
                     $xmlData           = XmlUtility::convertFromXml(file_get_contents($languageFile));
-                    $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::SPECIAL_KEYS['ATTRIBUTES']];
+                    $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']];
 
-                    if (isset($fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME])
-                        && true === $fileTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]
+                    if (isset($fileTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME])
+                        && true === $fileTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]
                     ) {
                         $this->addAllTranslations(
                             $editableTranslations[$extensionKey][$arrayKey],
@@ -193,10 +202,10 @@ class XlfService
                         );
                     } elseif (is_iterable($xmlData['xliff']['file']['body']['trans-unit'])) {
                         foreach ($xmlData['xliff']['file']['body']['trans-unit'] as $transUnit) {
-                            if (isset($transUnit[XmlUtility::SPECIAL_KEYS['ATTRIBUTES']])) {
-                                $transUnitTagAttributes = $transUnit[XmlUtility::SPECIAL_KEYS['ATTRIBUTES']];
+                            if (isset($transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']])) {
+                                $transUnitTagAttributes = $transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']];
 
-                                if (true === $transUnitTagAttributes[ExtensionInformationInterface::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]) {
+                                if (true === $transUnitTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]) {
                                     $editableTranslations[$extensionKey][$arrayKey][$transUnitTagAttributes['id']][$languageKey] = $transUnit['target'] ?? $transUnit['source'];
                                 }
                             }

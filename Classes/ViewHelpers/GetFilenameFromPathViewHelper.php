@@ -29,10 +29,10 @@ class GetFilenameFromPathViewHelper extends AbstractViewHelper
     public function initializeArguments(): void
     {
         parent::initializeArguments();
-        $this->registerArgument('path', 'string', 'filepath of which the last part should be extracted', 'mandatory');
+        $this->registerArgument('path', 'string', 'filepath of which the last part should be extracted', true);
     }
 
-    public function render(): array|string
+    public function render(): string
     {
         return pathinfo($this->arguments['path'], PATHINFO_FILENAME);
     }
