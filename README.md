@@ -10,7 +10,7 @@ with the value `true`:
 - on the `<file>` tag, all trans-units of the file are editable,
 - on a `<trans-unit>` tag, only that trans-unit is editable.
 
-The module is registered as its own main module in the top-level backend menu, positioned after `Tools`. After
+The module is registered below the PSBits Foundation main module, after the `Analyze LocalLang` module. After
 saving, the localization cache is flushed, so the edited labels are displayed immediately.
 
 ## Installation

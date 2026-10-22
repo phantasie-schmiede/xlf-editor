@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace PSBits\XlfEditor\Data;
 
 use PSBits\Foundation\Data\AbstractExtensionInformation;
-use PSBits\Foundation\Data\MainModuleConfiguration;
 use PSBits\Foundation\Data\ModuleConfiguration;
 use PSBits\XlfEditor\Controller\Backend\XlfEditorController;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -28,23 +27,15 @@ class ExtensionInformation extends AbstractExtensionInformation
     {
         parent::__construct();
 
-        $mainModuleKey = $this->buildModuleKeyPrefix() . 'main';
-        $this->addMainModule(
-            GeneralUtility::makeInstance(
-                MainModuleConfiguration::class,
-                key: $mainModuleKey,
-                position: [
-                    'after'  => 'tools',
-                    'before' => 'system',
-                ]
-            )
-        );
         $this->addModule(
             GeneralUtility::makeInstance(
                 ModuleConfiguration::class,
                 controllers : [XlfEditorController::class],
                 key         : $this->buildModuleKeyPrefix() . 'editor',
-                parentModule: $mainModuleKey
+                parentModule: 'foundation_main',
+                position    : [
+                    'after' => 'foundation_analyzelocallang',
+                ]
             )
         );
     }

@@ -17,19 +17,18 @@ use PSBits\XlfEditor\Data\ExtensionInformation;
 
 final class ExtensionInformationTest extends TestCase
 {
-    public function testRegistersTheXlfEditorModule(): void
+    public function testRegistersTheXlfEditorModuleBelowTheFoundationMainModule(): void
     {
         $extensionInformation = new ExtensionInformation();
-        $mainModules          = $extensionInformation->getMainModules();
-        $modules              = $extensionInformation->getModules();
 
-        self::assertCount(1, $mainModules);
-        self::assertSame('xlfeditor_main', $mainModules[0]->getKey());
-        self::assertSame(['after' => 'tools', 'before' => 'system'], $mainModules[0]->getPosition());
+        self::assertSame([], $extensionInformation->getMainModules());
+
+        $modules = $extensionInformation->getModules();
 
         self::assertCount(1, $modules);
         self::assertSame('xlfeditor_editor', $modules[0]->getKey());
-        self::assertSame('xlfeditor_main', $modules[0]->getParentModule());
+        self::assertSame('foundation_main', $modules[0]->getParentModule());
+        self::assertSame(['after' => 'foundation_analyzelocallang'], $modules[0]->getPosition());
         self::assertSame([XlfEditorController::class], $modules[0]->getControllers());
     }
 }
