@@ -3,31 +3,20 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+ * This file is part of the PSBits XLF-Editor.
  *
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
  */
 
 namespace PSBits\XlfEditor\Controller\Backend;
 
-use JsonException;
 use PSBits\Foundation\Attribute\ModuleAction;
 use PSBits\Foundation\Controller\Backend\AbstractModuleController;
-use PSBits\Foundation\Exceptions\ImplementationException;
-use PSBits\Foundation\Utility\ArrayUtility;
 use PSBits\Foundation\Utility\Xml\XmlUtility;
 use PSBits\XlfEditor\Service\XlfService;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
-use ReflectionException;
+use RuntimeException;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
@@ -36,7 +25,6 @@ use TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException;
  * Class XlfEditorController
  *
  * @package PSBits\XlfEditor\Controller\Backend
- * @ModuleConfig(mainModuleName="tools")
  */
 class XlfEditorController extends AbstractModuleController
 {
@@ -48,14 +36,6 @@ class XlfEditorController extends AbstractModuleController
         parent::__construct($moduleTemplateFactory);
     }
 
-    /**
-     * @return ResponseInterface
-     * @throws JsonException
-     * @throws ImplementationException
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws ReflectionException
-     */
     #[ModuleAction]
     public function indexAction(): ResponseInterface
     {
@@ -69,51 +49,38 @@ class XlfEditorController extends AbstractModuleController
      * @param string                               $filePath
      * @param array<string, array<string, string>> $labels
      *
-     * @throws ContainerExceptionInterface
-     * @throws JsonException
      * @throws NoSuchCacheException
-     * @throws NotFoundExceptionInterface
-     * @throws ReflectionException
+     * @throws RuntimeException
      */
     #[ModuleAction]
-    public function saveChangesAction(string $filePath, array $labels): void
+    public function saveChangesAction(string $filePath, array $labels): ResponseInterface
     {
-        foreach ($labels as $languageKey => $localLangIds) {
-            $fullPath = $filePath;
-
-            if (XlfService::DEFAULT_LANGUAGE_KEY !== $languageKey) {
-                $fullPath = pathinfo($filePath, PATHINFO_DIRNAME) . '/' . $languageKey . '.' . pathinfo(
+        foreach (array_keys($labels) as $languageKey) {
+            $fullPath = XlfService::DEFAULT_LANGUAGE_KEY === $languageKey
+                ? $filePath
+                : pathinfo($filePath, PATHINFO_DIRNAME) . '/' . $languageKey . '.' . pathinfo(
                     $filePath,
                     PATHINFO_BASENAME
                 );
+
+            if (!is_file($fullPath)) {
+                continue;
             }
 
-            $xmlDeclaration = fgets(fopen($fullPath, 'rb'));
-            $xmlData        = XmlUtility::convertFromXml(file_get_contents($fullPath));
+            $xmlData = XmlUtility::convertFromXml((string) file_get_contents($fullPath));
+            $xmlData = $this->xlfService->updateTransUnitLabels($xmlData, $labels, (string) $languageKey);
 
-            foreach ($localLangIds as $localLangId => $localLangValue) {
-                // index looks like xliff.file.body.trans-unit.X.@attributes.id, where X is the position among all translations in that file
-                $indexes = ArrayUtility::inArrayRecursive($xmlData, $localLangId, true);
+            $content = XmlUtility::convertToXml($xmlData, $this->xlfService->getXmlHeader($fullPath));
 
-                if ([] === $indexes) {
-                    continue;
-                }
-
-                $arrayPath                                                                    = explode('.', $indexes[0]);
-                $transUnitPosition                                                            = $arrayPath[4];
-                $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['source'] = $labels[XlfService::DEFAULT_LANGUAGE_KEY][$localLangId];
-
-                if (XlfService::DEFAULT_LANGUAGE_KEY !== $languageKey) {
-                    $xmlData['xliff']['file']['body']['trans-unit'][$transUnitPosition]['target'] = $localLangValue;
-                }
+            if (false === file_put_contents($fullPath, $content)) {
+                throw new RuntimeException(sprintf('Could not write the language file "%s".', $fullPath));
             }
-
-            file_put_contents($fullPath, $xmlDeclaration . XmlUtility::convertToXml($xmlData));
         }
 
         // Clear the l10n-cache. Otherwise, the changes won't be displayed in the overview.
         $this->cacheManager->getCache('l10n')
             ->flush();
-        $this->redirect('index');
+
+        return $this->redirect('index');
     }
 }

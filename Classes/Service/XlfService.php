@@ -3,28 +3,17 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+ * This file is part of the PSBits XLF-Editor.
  *
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
  */
 
 namespace PSBits\XlfEditor\Service;
 
-use JsonException;
-use PSBits\Foundation\Exceptions\ImplementationException;
-use PSBits\Foundation\Service\ExtensionInformationService;
+use Exception;
 use PSBits\Foundation\Utility\Xml\XmlUtility;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use ReflectionException;
-use TYPO3\CMS\Core\Localization\LocalizationFactory;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -38,107 +27,50 @@ use function is_array;
 class XlfService
 {
     /**
-     * If defined as true, language files of this extension will be editable in the Backend via the Language file
-     * editor module. You can't override this constant if you implement this interface directly, but you can achieve
-     * this when extending the AbstractExtensionInformation class (which you should definitely do). Another way to
-     * allow the editing on a per file or even trans-unit basis is to include this attribute inside the specific tags
-     * of your xlf-files: allow_language_file_editing="true"
+     * Language files are only editable in the backend module when they carry this attribute with the value
+     * "true", either on the <file> tag (all trans-units of the file are editable) or on a specific
+     * <trans-unit> tag (only that trans-unit is editable):
      *
-     * Example 1:
-     * <?xml encoding="utf-8" standalone="yes" version="1.0" ?>
-     * <xliff version="1.0">
-     *     <file allow_language_file_editing="true" datatype="plaintext" date="2020-01-17T12:30:00+01:00"
-     *     original="messages" product-name="foundation" source-language="en">
-     *         <header />
+     * <?xml version="1.0" encoding="utf-8"?>
+     * <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+     *     <file allow_language_file_editing="true" datatype="plaintext" original="locallang.xlf"
+     *     source-language="en">
      *         <body>
-     *             <trans-unit id="example1">
-     *                 <source>editable</source>
-     *             </trans-unit>
-     *             <trans-unit id="example2">
-     *                 <source>editable</source>
-     *             </trans-unit>
-     *         </body>
-     *     </file>
-     * </xliff>
-     *
-     * Example 2:
-     * <?xml encoding="utf-8" standalone="yes" version="1.0" ?>
-     * <xliff version="1.0">
-     *     <file datatype="plaintext" date="2020-01-17T12:30:00+01:00" original="messages"
-     *     product-name="foundation" source-language="en">
-     *         <header />
-     *         <body>
-     *             <trans-unit id="example1">
-     *                 <source>not editable</source>
-     *             </trans-unit>
-     *             <trans-unit allow_language_file_editing="true" id="example2">
-     *                 <source>editable</source>
+     *             <trans-unit id="example">
+     *                 <source>Editable</source>
      *             </trans-unit>
      *         </body>
      *     </file>
      * </xliff>
      */
-    //    public const ALLOW_LANGUAGE_FILE_EDITING = false;
     public const string ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME = 'allow_language_file_editing';
     public const string DEFAULT_LANGUAGE_KEY                       = 'default';
     public const string FILE_ENDING                                = 'xlf';
 
-    public function __construct(
-        protected readonly ExtensionInformationService $extensionInformationService,
-        protected readonly LocalizationFactory         $localizationFactory,
-    ) {
-    }
-
     /**
-     * @param array<string, array<string, string>>|null $translations
-     * @param-out array<string, array<string, string>> $translations
-     * @param string $languageFile
-     * @param string $languageKey
+     * Collects the labels of all trans-units of the given language file.
+     *
+     * @param array<string, mixed> $xmlData
+     *
+     * @return array<string, string> localLangId => label
      */
-    private function addAllTranslations(
-        &$translations,
-        string $languageFile,
-        string $languageKey
-    ): void {
-        $parsedData = $this->localizationFactory->getParsedData($languageFile, $languageKey);
+    public function getAllTransUnitLabels(array $xmlData): array
+    {
+        $labels = [];
 
-        if (!is_array($translations)) {
-            $translations = [];
-        }
+        foreach ($this->collectTransUnits($xmlData) as $transUnit) {
+            $localLangId = $transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']]['id'] ?? null;
 
-        $newTranslations = $this->rearrangeTranslationArray($parsedData, $languageKey);
-
-        foreach ($newTranslations as $id => $byLanguage) {
-            foreach ($byLanguage as $language => $label) {
-                $translations[$id][$language] = $label;
+            if (is_string($localLangId)) {
+                $labels[$localLangId] = $this->getTransUnitLabel($transUnit);
             }
         }
-    }
 
-    /**
-     * @param array<string, array<string, array<int, array<string, string>>>> $translations
-     * @param string                                                          $languageKey
-     *
-     * @return array<string, array<string, string>>
-     */
-    private function rearrangeTranslationArray(array $translations, string $languageKey): array
-    {
-        $rearrangedTranslations = [];
-
-        foreach ($translations[$languageKey] as $id => $translation) {
-            $rearrangedTranslations[$id][$languageKey] = $translation[0]['target'];
-        }
-
-        return $rearrangedTranslations;
+        return $labels;
     }
 
     /**
      * @return array<string, array<string, array<string, array<string, string>>>>
-     * @throws ContainerExceptionInterface
-     * @throws ImplementationException
-     * @throws JsonException
-     * @throws NotFoundExceptionInterface
-     * @throws ReflectionException
      */
     public function getEditableTranslations(): array
     {
@@ -146,75 +78,234 @@ class XlfService
         $loadedExtensions     = ExtensionManagementUtility::getLoadedExtensionListArray();
 
         foreach ($loadedExtensions as $extensionKey) {
-            try {
-                $extensionInformation = $this->extensionInformationService->getExtensionInformation($extensionKey);
-            } catch (ImplementationException) {
-                // Extension without an ExtensionInformation class; attribute-based editing still applies
-                $extensionInformation = null;
+            $languageFileDirectory = ExtensionManagementUtility::extPath($extensionKey) . 'Resources/Private/Language/';
+
+            if (!is_dir($languageFileDirectory)) {
+                continue;
             }
 
-            $languageFileDirectory = ExtensionManagementUtility::extPath($extensionKey) . 'Resources/Private/Language/';
-            $languageFiles         = [];
-            $languageFiles         = GeneralUtility::getAllFilesAndFoldersInPath(
-                $languageFiles,
-                $languageFileDirectory,
-                self::FILE_ENDING
-            );
+            $languageFiles = GeneralUtility::getAllFilesAndFoldersInPath([], $languageFileDirectory, self::FILE_ENDING);
 
             foreach ($languageFiles as $languageFile) {
-                $directoryName = pathinfo($languageFile, PATHINFO_DIRNAME);
-                $filename      = pathinfo($languageFile, PATHINFO_FILENAME);
+                $filename = pathinfo($languageFile, PATHINFO_FILENAME);
 
                 if (str_contains($filename, '.')) {
-                    [$languageKey, $filename] = explode('.', $filename);
+                    [$languageKey] = explode('.', $filename, 2);
                 } else {
                     $languageKey = self::DEFAULT_LANGUAGE_KEY;
                 }
 
-                $arrayKey = $directoryName . '/' . $filename . '.' . self::FILE_ENDING;
+                $arrayKey = pathinfo($languageFile, PATHINFO_DIRNAME) . '/' . $filename . '.' . self::FILE_ENDING;
 
-                /**
-                 * Collect all translations of current file if the extension allows general editing of its language
-                 * files or if current file contains a special XML-attribute in its <file>-tag. Otherwise look at each
-                 * translation separately and check if it may be edited.
-                 *
-                 * @see \PSBits\Foundation\Data\ExtensionInformationInterface
-                 */
-                $extensionInformationClass = null !== $extensionInformation ? get_class($extensionInformation) : '';
+                try {
+                    $xmlData           = XmlUtility::convertFromXml((string) file_get_contents($languageFile));
+                    $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']] ?? [];
 
-                if ('' !== $extensionInformationClass && defined($extensionInformationClass . '::ALLOW_LANGUAGE_FILE_EDITING') && true === $extensionInformationClass::ALLOW_LANGUAGE_FILE_EDITING) {
-                    $this->addAllTranslations(
-                        $editableTranslations[$extensionKey][$arrayKey],
-                        $languageFile,
-                        $languageKey
-                    );
-                } else {
-                    $xmlData           = XmlUtility::convertFromXml(file_get_contents($languageFile));
-                    $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']];
-
-                    if (isset($fileTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME])
-                        && true === $fileTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]
-                    ) {
-                        $this->addAllTranslations(
-                            $editableTranslations[$extensionKey][$arrayKey],
-                            $languageFile,
-                            $languageKey
-                        );
-                    } elseif (is_iterable($xmlData['xliff']['file']['body']['trans-unit'])) {
-                        foreach ($xmlData['xliff']['file']['body']['trans-unit'] as $transUnit) {
-                            if (isset($transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']])) {
-                                $transUnitTagAttributes = $transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']];
-
-                                if (true === $transUnitTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME]) {
-                                    $editableTranslations[$extensionKey][$arrayKey][$transUnitTagAttributes['id']][$languageKey] = $transUnit['target'] ?? $transUnit['source'];
-                                }
-                            }
-                        }
+                    if (true === ($fileTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME] ?? false)) {
+                        $labels = $this->getAllTransUnitLabels($xmlData);
+                    } else {
+                        $labels = $this->getEditableTransUnitLabels($xmlData);
                     }
+
+                    foreach ($labels as $localLangId => $label) {
+                        $editableTranslations[$extensionKey][$arrayKey][$localLangId][$languageKey] = $label;
+                    }
+                } catch (Exception) {
+                    // Skip language files that cannot be read or parsed.
                 }
             }
         }
 
         return $editableTranslations;
+    }
+
+    /**
+     * Collects the labels of those trans-units that are individually marked as editable via the
+     * allow_language_file_editing attribute on their <trans-unit> tag.
+     *
+     * @param array<string, mixed> $xmlData
+     *
+     * @return array<string, string> localLangId => label
+     */
+    public function getEditableTransUnitLabels(array $xmlData): array
+    {
+        $labels = [];
+
+        foreach ($this->collectTransUnits($xmlData) as $transUnit) {
+            $transUnitTagAttributes = $transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']] ?? [];
+
+            if (true !== ($transUnitTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME] ?? false)) {
+                continue;
+            }
+
+            $labels[$transUnitTagAttributes['id']] = $this->getTransUnitLabel($transUnit);
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Returns the XML declaration of the given file, or the default declaration of the XmlUtility if the
+     * file does not have one, so that re-saved files keep their header.
+     */
+    public function getXmlHeader(string $filePath): string
+    {
+        $handle = @fopen($filePath, 'rb');
+
+        if (false === $handle) {
+            return XmlUtility::XML_HEADER;
+        }
+
+        $firstLine = (string) fgets($handle);
+        fclose($handle);
+
+        return str_starts_with(ltrim($firstLine), '<?xml') ? rtrim($firstLine) : XmlUtility::XML_HEADER;
+    }
+
+    /**
+     * Updates the source and target labels of the trans-units that are present in the given labels.
+     *
+     * @param array<string, mixed>                 $xmlData
+     * @param array<string, array<string, string>> $labels
+     * @param string                               $languageKey
+     *
+     * @return array<string, mixed>
+     */
+    public function updateTransUnitLabels(array $xmlData, array $labels, string $languageKey): array
+    {
+        $body = $xmlData['xliff']['file']['body'] ?? null;
+
+        if (!is_array($body)) {
+            return $xmlData;
+        }
+
+        if (isset($body['trans-unit'])) {
+            $body['trans-unit'] = $this->updateTransUnitLabelsInElements($body['trans-unit'], $labels, $languageKey);
+        }
+
+        if (isset($body['group'])) {
+            $body['group'] = $this->updateGroups($body['group'], $labels, $languageKey);
+        }
+
+        $xmlData['xliff']['file']['body'] = $body;
+
+        return $xmlData;
+    }
+
+    /**
+     * @param array<string, mixed> $xmlData
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function collectTransUnits(array $xmlData): array
+    {
+        $transUnits = [];
+
+        foreach ($this->normalizeElements($xmlData['xliff']['file']['body']['trans-unit'] ?? []) as $transUnit) {
+            $transUnits[] = $transUnit;
+        }
+
+        foreach ($this->normalizeElements($xmlData['xliff']['file']['body']['group'] ?? []) as $group) {
+            foreach ($this->normalizeElements($group['trans-unit'] ?? []) as $transUnit) {
+                $transUnits[] = $transUnit;
+            }
+        }
+
+        return $transUnits;
+    }
+
+    /**
+     * @param array<string, mixed>|list<array<string, mixed>> $elements
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function normalizeElements(array $elements): array
+    {
+        if ([] === $elements || !ArrayUtility::isAssociative($elements)) {
+            return $elements;
+        }
+
+        // A single element is stored as a single array instead of a list.
+        return [0 => $elements];
+    }
+
+    /**
+     * @param array<string, mixed> $transUnit
+     */
+    private function getTransUnitLabel(array $transUnit): string
+    {
+        return (string) (XmlUtility::getNodeValue($transUnit, 'target', false)
+            ?? XmlUtility::getNodeValue($transUnit, 'source', false)
+            ?? '');
+    }
+
+    /**
+     * @param array<string, mixed>|list<array<string, mixed>> $transUnits
+     * @param array<string, array<string, string>>            $labels
+     * @param string                                          $languageKey
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function updateTransUnitLabelsInElements(array $transUnits, array $labels, string $languageKey): array
+    {
+        $elements = $this->normalizeElements($transUnits);
+
+        foreach ($elements as $position => $transUnit) {
+            $elements[$position] = $this->updateTransUnitLabelsInTransUnit($transUnit, $labels, $languageKey);
+        }
+
+        return $elements;
+    }
+
+    /**
+     * @param array<string, mixed>|list<array<string, mixed>> $groups
+     * @param array<string, array<string, string>>            $labels
+     * @param string                                          $languageKey
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function updateGroups(array $groups, array $labels, string $languageKey): array
+    {
+        $normalizedGroups = $this->normalizeElements($groups);
+
+        foreach ($normalizedGroups as $position => $group) {
+            if (isset($group['trans-unit'])) {
+                $normalizedGroups[$position]['trans-unit'] = $this->updateTransUnitLabelsInElements(
+                    $group['trans-unit'],
+                    $labels,
+                    $languageKey
+                );
+            }
+        }
+
+        return $normalizedGroups;
+    }
+
+    /**
+     * @param array<string, mixed>                 $transUnit
+     * @param array<string, array<string, string>> $labels
+     * @param string                               $languageKey
+     *
+     * @return array<string, mixed>
+     */
+    private function updateTransUnitLabelsInTransUnit(array $transUnit, array $labels, string $languageKey): array
+    {
+        $localLangId = $transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']]['id'] ?? null;
+
+        if (!is_string($localLangId) || !isset($labels[$languageKey][$localLangId])) {
+            return $transUnit;
+        }
+
+        if (self::DEFAULT_LANGUAGE_KEY === $languageKey) {
+            $transUnit['source'] = $labels[$languageKey][$localLangId];
+        } else {
+            $transUnit['target'] = $labels[$languageKey][$localLangId];
+
+            if (isset($labels[self::DEFAULT_LANGUAGE_KEY][$localLangId])) {
+                $transUnit['source'] = $labels[self::DEFAULT_LANGUAGE_KEY][$localLangId];
+            }
+        }
+
+        return $transUnit;
     }
 }
