@@ -2,6 +2,17 @@
 
 Backend module which allows to edit XLF files
 
+## Usage
+
+Language files are only editable in the module when they carry the `allow_language_file_editing` attribute
+with the value `true`:
+
+- on the `<file>` tag, all trans-units of the file are editable,
+- on a `<trans-unit>` tag, only that trans-unit is editable.
+
+The module is registered as its own main module in the top-level backend menu, positioned after `Tools`. After
+saving, the localization cache is flushed, so the edited labels are displayed immediately.
+
 ## Installation
 
 ```bash
