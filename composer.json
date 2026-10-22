@@ -20,7 +20,7 @@
         "sort-packages": true,
         "vendor-dir": ".Build/vendor"
     },
-    "description": "Backend module which allows to edit XLF files",
+    "description": "Backend module which allows to edit XLF files. Developmental state, not intended for production environments.",
     "extra": {
         "typo3/cms": {
             "extension-key": "xlf_editor",

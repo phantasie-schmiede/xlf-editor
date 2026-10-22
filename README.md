@@ -2,6 +2,8 @@
 
 Backend module which allows to edit XLF files
 
+> **Note:** this extension is in a developmental state and is not intended for production environments.
+
 ## Usage
 
 The module lists the language files of all installed extensions and allows to edit the labels of every
