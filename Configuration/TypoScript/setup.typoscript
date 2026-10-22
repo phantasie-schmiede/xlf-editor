@@ -1,7 +1,0 @@
-module.tx_xlfeditor {
-  view {
-    layoutRootPaths.0 = {$module.tx_xlfeditor.view.layoutRootPath}
-    partialRootPaths.0 = {$module.tx_xlfeditor.view.partialRootPath}
-    templateRootPaths.0 = {$module.tx_xlfeditor.view.templateRootPath}
-  }
-}

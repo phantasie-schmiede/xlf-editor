@@ -3,30 +3,49 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+ * This file is part of the PSBits XLF-Editor.
  *
  * For the full copyright and license information, please read the
  * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
  */
 
 namespace PSBits\XlfEditor\Data;
 
 use PSBits\Foundation\Data\AbstractExtensionInformation;
+use PSBits\Foundation\Data\MainModuleConfiguration;
+use PSBits\Foundation\Data\ModuleConfiguration;
 use PSBits\XlfEditor\Controller\Backend\XlfEditorController;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Class ExtensionInformation
+ *
  * @package PSBits\XlfEditor\Data
  */
 class ExtensionInformation extends AbstractExtensionInformation
 {
-    public const MODULES = [
-        'xlfEditor' => [XlfEditorController::class],
-    ];
+    public function __construct()
+    {
+        parent::__construct();
+
+        $mainModuleKey = $this->buildModuleKeyPrefix() . 'main';
+        $this->addMainModule(
+            GeneralUtility::makeInstance(
+                MainModuleConfiguration::class,
+                key: $mainModuleKey,
+                position: [
+                    'after'  => 'tools',
+                    'before' => 'system',
+                ]
+            )
+        );
+        $this->addModule(
+            GeneralUtility::makeInstance(
+                ModuleConfiguration::class,
+                controllers : [XlfEditorController::class],
+                key         : $this->buildModuleKeyPrefix() . 'editor',
+                parentModule: $mainModuleKey
+            )
+        );
+    }
 }
