@@ -72,7 +72,7 @@ final class XlfServiceTest extends TestCase
         self::assertSame([
             'editable.one' => 'Editable one',
             'plain.one'    => 'Plain one',
-        ], $this->service->getAllTransUnitLabels($xmlData));
+        ], $this->service->getTransUnitLabels($xmlData));
     }
 
     public function testCollectsTheLabelsOfTransUnitsInsidePluralGroups(): void
@@ -80,64 +80,20 @@ final class XlfServiceTest extends TestCase
         $xmlData = XmlUtility::convertFromXml(self::buildPluralLanguageFile());
 
         self::assertSame([
-            'value'                        => 'Value',
-            'insertedCounterReadings[0]'   => 'One new counter reading has been added.',
-            'insertedCounterReadings[1]'   => '{quantity} new counter readings have been added.',
-        ], $this->service->getAllTransUnitLabels($xmlData));
+            'value'                       => 'Value',
+            'insertedCounterReadings[0]'  => 'One new counter reading has been added.',
+            'insertedCounterReadings[1]'  => '{quantity} new counter readings have been added.',
+        ], $this->service->getTransUnitLabels($xmlData));
     }
 
-    public function testCollectsTheLabelsOfIndividuallyMarkedTransUnits(): void
+    public function testPrefersTheTargetLabelOfTheTransUnits(): void
     {
         $xmlData = XmlUtility::convertFromXml(
             '<?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" datatype="plaintext" original="locallang.xlf">
         <body>
-            <trans-unit allow_language_file_editing="true" id="editable.one">
-                <source>Editable one</source>
-            </trans-unit>
-            <trans-unit id="plain.one">
-                <source>Plain one</source>
-            </trans-unit>
-        </body>
-    </file>
-</xliff>
-'
-        );
-
-        self::assertSame(
-            ['editable.one' => 'Editable one'],
-            $this->service->getEditableTransUnitLabels($xmlData)
-        );
-    }
-
-    public function testCollectsTheLabelsOfAnIndividuallyMarkedSingleTransUnit(): void
-    {
-        $xmlData = XmlUtility::convertFromXml(
-            '<?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" datatype="plaintext" original="locallang.xlf">
-        <body>
-            <trans-unit allow_language_file_editing="true" id="only.one">
-                <source>Only one</source>
-            </trans-unit>
-        </body>
-    </file>
-</xliff>
-'
-        );
-
-        self::assertSame(['only.one' => 'Only one'], $this->service->getEditableTransUnitLabels($xmlData));
-    }
-
-    public function testPrefersTheTargetLabelOfIndividuallyMarkedTransUnits(): void
-    {
-        $xmlData = XmlUtility::convertFromXml(
-            '<?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" datatype="plaintext" original="locallang.xlf">
-        <body>
-            <trans-unit allow_language_file_editing="true" id="editable.one">
+            <trans-unit id="editable.one">
                 <source>Editable one</source>
                 <target>Übersetztes eins</target>
             </trans-unit>
@@ -149,15 +105,8 @@ final class XlfServiceTest extends TestCase
 
         self::assertSame(
             ['editable.one' => 'Übersetztes eins'],
-            $this->service->getEditableTransUnitLabels($xmlData)
+            $this->service->getTransUnitLabels($xmlData)
         );
-    }
-
-    public function testReturnsNoLabelsIfNoTransUnitIsMarked(): void
-    {
-        $xmlData = XmlUtility::convertFromXml(self::buildLanguageFile());
-
-        self::assertSame([], $this->service->getEditableTransUnitLabels($xmlData));
     }
 
     public function testUpdatesTheSourceLabelOfTheDefaultLanguage(): void

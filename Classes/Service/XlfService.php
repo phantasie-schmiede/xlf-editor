@@ -26,56 +26,16 @@ use function is_array;
  */
 class XlfService
 {
-    /**
-     * Language files are only editable in the backend module when they carry this attribute with the value
-     * "true", either on the <file> tag (all trans-units of the file are editable) or on a specific
-     * <trans-unit> tag (only that trans-unit is editable):
-     *
-     * <?xml version="1.0" encoding="utf-8"?>
-     * <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-     *     <file allow_language_file_editing="true" datatype="plaintext" original="locallang.xlf"
-     *     source-language="en">
-     *         <body>
-     *             <trans-unit id="example">
-     *                 <source>Editable</source>
-     *             </trans-unit>
-     *         </body>
-     *     </file>
-     * </xliff>
-     */
-    public const string ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME = 'allow_language_file_editing';
-    public const string DEFAULT_LANGUAGE_KEY                       = 'default';
-    public const string FILE_ENDING                                = 'xlf';
-
-    /**
-     * Collects the labels of all trans-units of the given language file.
-     *
-     * @param array<string, mixed> $xmlData
-     *
-     * @return array<string, string> localLangId => label
-     */
-    public function getAllTransUnitLabels(array $xmlData): array
-    {
-        $labels = [];
-
-        foreach ($this->collectTransUnits($xmlData) as $transUnit) {
-            $localLangId = $transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']]['id'] ?? null;
-
-            if (is_string($localLangId)) {
-                $labels[$localLangId] = $this->getTransUnitLabel($transUnit);
-            }
-        }
-
-        return $labels;
-    }
+    public const string DEFAULT_LANGUAGE_KEY = 'default';
+    public const string FILE_ENDING          = 'xlf';
 
     /**
      * @return array<string, array<string, array<string, array<string, string>>>>
      */
-    public function getEditableTranslations(): array
+    public function getTranslations(): array
     {
-        $editableTranslations = [];
-        $loadedExtensions     = ExtensionManagementUtility::getLoadedExtensionListArray();
+        $translations     = [];
+        $loadedExtensions = ExtensionManagementUtility::getLoadedExtensionListArray();
 
         foreach ($loadedExtensions as $extensionKey) {
             $languageFileDirectory = ExtensionManagementUtility::extPath($extensionKey) . 'Resources/Private/Language/';
@@ -98,17 +58,11 @@ class XlfService
                 $arrayKey = pathinfo($languageFile, PATHINFO_DIRNAME) . '/' . $filename . '.' . self::FILE_ENDING;
 
                 try {
-                    $xmlData           = XmlUtility::convertFromXml((string) file_get_contents($languageFile));
-                    $fileTagAttributes = $xmlData['xliff']['file'][XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']] ?? [];
-
-                    if (true === ($fileTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME] ?? false)) {
-                        $labels = $this->getAllTransUnitLabels($xmlData);
-                    } else {
-                        $labels = $this->getEditableTransUnitLabels($xmlData);
-                    }
+                    $xmlData = XmlUtility::convertFromXml((string) file_get_contents($languageFile));
+                    $labels  = $this->getTransUnitLabels($xmlData);
 
                     foreach ($labels as $localLangId => $label) {
-                        $editableTranslations[$extensionKey][$arrayKey][$localLangId][$languageKey] = $label;
+                        $translations[$extensionKey][$arrayKey][$localLangId][$languageKey] = $label;
                     }
                 } catch (Exception) {
                     // Skip language files that cannot be read or parsed.
@@ -116,29 +70,26 @@ class XlfService
             }
         }
 
-        return $editableTranslations;
+        return $translations;
     }
 
     /**
-     * Collects the labels of those trans-units that are individually marked as editable via the
-     * allow_language_file_editing attribute on their <trans-unit> tag.
+     * Collects the labels of all trans-units of the given language file.
      *
      * @param array<string, mixed> $xmlData
      *
      * @return array<string, string> localLangId => label
      */
-    public function getEditableTransUnitLabels(array $xmlData): array
+    public function getTransUnitLabels(array $xmlData): array
     {
         $labels = [];
 
         foreach ($this->collectTransUnits($xmlData) as $transUnit) {
-            $transUnitTagAttributes = $transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']] ?? [];
+            $localLangId = $transUnit[XmlUtility::SPECIAL_ARRAY_KEYS['ATTRIBUTES']]['id'] ?? null;
 
-            if (true !== ($transUnitTagAttributes[self::ALLOW_LANGUAGE_FILE_EDITING_ATTRIBUTE_NAME] ?? false)) {
-                continue;
+            if (is_string($localLangId)) {
+                $labels[$localLangId] = $this->getTransUnitLabel($transUnit);
             }
-
-            $labels[$transUnitTagAttributes['id']] = $this->getTransUnitLabel($transUnit);
         }
 
         return $labels;

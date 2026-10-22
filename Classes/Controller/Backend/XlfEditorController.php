@@ -39,8 +39,8 @@ class XlfEditorController extends AbstractModuleController
     #[ModuleAction]
     public function indexAction(): ResponseInterface
     {
-        $editableTranslations = $this->xlfService->getEditableTranslations();
-        $this->view->assign('translations', $editableTranslations);
+        $translations = $this->xlfService->getTranslations();
+        $this->view->assign('translations', $translations);
 
         return $this->htmlResponse();
     }
