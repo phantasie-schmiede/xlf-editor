@@ -36,7 +36,7 @@
     "name": "psbits/xlf-editor",
     "require": {
         "php": "^8.3",
-        "psbits/foundation": "^4.0",
+        "psbits/foundation": "^4.1",
         "typo3/cms-backend": "^13.4 || ^14.3",
         "typo3/cms-core": "^13.4 || ^14.3"
     },
@@ -44,9 +44,11 @@
         "friendsofphp/php-cs-fixer": "^3.95",
         "helmich/typo3-typoscript-lint": "^3.3",
         "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^11",
         "psbits/qa": "@dev",
         "roave/security-advisories": "dev-latest",
-        "saschaegerer/phpstan-typo3": "^2.1"
+        "saschaegerer/phpstan-typo3": "^2.1 || ^3.0",
+        "typo3/testing-framework": "^9.5"
     },
     "scripts": {
         "analyze:php": "phpstan analyse --configuration=Build/Quality/phpstan.neon.dist --no-progress",
