@@ -17,5 +17,5 @@ $EM_CONF[$_EXTKEY] = [
     'description'      => 'Backend module which allows to edit XLF files. Developmental state, not intended for production environments.',
     'state'            => 'alpha',
     'title'            => 'PSBits | XLF-editor',
-    'version'          => '0.1.0',
+    'version'          => '0.1.1',
 ];
